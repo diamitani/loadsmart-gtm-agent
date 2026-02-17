@@ -1,13 +1,15 @@
 # enablygtm
 
-Enably Go-To-Market software, now bootstrapped with an **OpenClaw integration**.
+Enably Go-To-Market software with a platform backend that can run **OpenClaw on Azure VM** and configure **OpenCode** for Codex/ChatGPT operations.
 
 ## What is included
 
-- A lightweight Python package in `src/enablygtm`.
-- `OpenClawClient` to push account signals and campaign suggestions to OpenClaw.
-- `GTMOrchestrator` to convert raw account intent into campaign actions.
-- Unit tests for orchestration and API error handling.
+- Python package in `src/enablygtm` for GTM orchestration.
+- `OpenClawClient` for OpenClaw API operations (signals + campaign suggestions).
+- `AzureVMBackend` to discover VM public IP, run SSH commands, and start OpenClaw.
+- `OpenCodeManager` to install OpenCode on VM and configure a Codex ChatGPT profile.
+- `PlatformBackend` to bootstrap infrastructure and return a ready `OpenClawClient`.
+- `GTMOrchestrator` to convert account intent into campaign actions.
 
 ## Quick start
 
@@ -18,23 +20,37 @@ pip install -e .
 python -m unittest discover -s tests -v
 ```
 
-## Example
+## Azure VM + OpenClaw + OpenCode bootstrap
 
 ```python
-from enablygtm import (
-    AccountSignal,
-    GTMOrchestrator,
-    OpenClawClient,
-    OpenClawConfig,
+from enablygtm import AzureVMConfig, PlatformBackend
+
+platform = PlatformBackend(
+    azure_vm_config=AzureVMConfig(
+        vm_name="openclaw-vm",
+        resource_group="enably-rg",
+        admin_username="azureuser",
+        ssh_private_key_path="~/.ssh/id_rsa",
+        openclaw_port=8080,
+    ),
+    openclaw_api_key="replace-me",
 )
 
-config = OpenClawConfig(
-    base_url="https://api.openclaw.example",
-    api_key="replace-me",
-)
+client = platform.bootstrap()
+# client is ready against http://<azure-vm-public-ip>:8080
+```
 
-client = OpenClawClient(config)
-orchestrator = GTMOrchestrator(client, default_owner="revops-emea")
+`bootstrap()` performs:
+
+1. Start/refresh OpenClaw container on the VM.
+2. Install OpenCode on the VM (via install script).
+3. Configure OpenCode profile `codex-chatgpt` with OpenClaw backend URL.
+4. Return a ready `OpenClawClient`.
+
+## GTM processing example
+
+```python
+from enablygtm import AccountSignal, GTMOrchestrator
 
 signal = AccountSignal(
     account_id="acct-001",
@@ -44,12 +60,13 @@ signal = AccountSignal(
     metadata={"region": "EMEA"},
 )
 
+orchestrator = GTMOrchestrator(client, default_owner="revops-emea")
 suggestion = orchestrator.process_signal(signal)
 print(suggestion)
 ```
 
 ## Next build steps
 
+- Add managed identity auth for Azure CLI operations.
 - Add retries/backoff and idempotency keys to OpenClaw requests.
-- Add CLI or API service layer for batch ingestion.
-- Integrate CRM enrichment before scoring signal intensity.
+- Add batched ingestion service for large signal streams.

@@ -18,3 +18,23 @@ class OpenClawConfig:
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
+
+
+@dataclass(frozen=True)
+class AzureVMConfig:
+    """Connection settings for running OpenClaw on an Azure VM."""
+
+    vm_name: str
+    resource_group: str
+    admin_username: str
+    ssh_private_key_path: str
+    openclaw_port: int = 8080
+
+
+@dataclass(frozen=True)
+class OpenCodeConfig:
+    """Settings required to install and run OpenCode on the VM."""
+
+    install_script_url: str = "https://opencode.ai/install.sh"
+    opencode_binary_path: str = "/usr/local/bin/opencode"
+    codex_profile_name: str = "codex-chatgpt"
