@@ -1,3 +1,16 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enablygtm"
+version = "0.1.0"
+description = "Enably Go-To-Market orchestration with OpenClaw integration"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
 [project]
 name = "enablygtm"
 version = "0.1.0"
