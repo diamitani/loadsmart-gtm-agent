@@ -77,7 +77,7 @@ export function KnowledgeManager({ initial }: { initial: Doc[] }) {
                   <span className="truncate">{d.name}</span>
                 </div>
                 <p className="mt-1 line-clamp-2 text-xs text-muted">{d.preview}</p>
-                <div className="mt-2 flex gap-2"><Badge>{d.kind}</Badge><Badge>{(d.chars / 1000).toFixed(1)}k chars</Badge><span className="text-[10px] text-faint">{timeAgo(d.createdAt)}</span></div>
+                <div className="mt-2 flex gap-2"><Badge>{d.kind}</Badge><Badge>{(d.chars / 1000).toFixed(1)}k chars</Badge><span className="text-[10px] text-faint" suppressHydrationWarning>{timeAgo(d.createdAt)}</span></div>
               </div>
               <button onClick={async () => { await fetch(`/api/knowledge?id=${d.id}`, { method: "DELETE" }); router.refresh(); }} className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-faint hover:bg-rose-soft hover:text-rose" aria-label={`Delete ${d.name}`}>
                 <Trash2 className="h-3.5 w-3.5" />

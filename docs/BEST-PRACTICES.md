@@ -13,6 +13,11 @@ This repo is the consolidation of eight earlier attempts. Here is what was kept,
 | Agent OS whitepaper (ROSTR) | One Must Act wholeness W, middle-out DAG compressor, latency watchdog, durable virtual actors, Calibrated Truth Protocol, POP 11-artifact guarantee | `lib/pal/*` — each implemented as tested code |
 | Web App Development Process skill | 0 → 1 → 2–99 → 100, quality-gate weights, one-next-action rule, approval policy, harness directory layout | `lib/pal/quality-gate.ts`, `lib/pal/pop.ts#nextActionFor`, `agent/` |
 | Prospector skill v0.3.0 | Signal-to-email prospecting with PAL protocol, scoring, approval-bound verification | `agent/skills/prospector/` |
+| Enably SDR Assistant spec | 14 function schemas, Lean vs Advanced flows, accuracy > compliance > speed, confirm-before-send, audit every mutation | `agent/skills/sdr-assistant`, `lib/connectors/` |
+| Sales Enablement Assistant instructions | Activity tracker, template rules (subject/body/placeholders), confirm CRM pushes, never simulate API calls | `agent/skills/sales-enablement`, `/app/activity` |
+| ICP Architect GPT | 11-field ICP, one segment per ICP, JSON export, minimal/standard/enriched | `agent/skills/icp` |
+| Enably PRD | Modular agents, knowledge base, integrations, success metrics | `docs/PRD-STATUS.md` |
+| Sales Operations Setup Guide | 6-step sales-ops build incl. email DNS (SPF/DKIM/DMARC) + warm-up | `agent/skills/sales-ops-setup`, `sales_ops_plan` asset |
 | n8n-engineer skill | Architecture decision order, MCP rules, 4 GTM starter workflows | `agent/skills/n8n-engineer/`, `agent/workflows/` |
 
 ## Engineering decisions

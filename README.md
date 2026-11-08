@@ -1,6 +1,8 @@
 # Enably — GTM Architect
 
-**The AI go-to-market architect.** Tell it what you sell and who buys it. It compiles your request, checks the foundation, plans the work in parallel, builds the assets (ICP, personas, positioning, email/LinkedIn/call sequences, battlecards, KPIs, playbooks, prospecting plans, n8n automations), tests them for truth and quality, and hands back **one next action**.
+**The AI go-to-market architect.** Tell it what you sell and who buys it. It compiles your request, checks the foundation, plans the work in parallel, builds the assets (ICP, personas, positioning, use cases, email/LinkedIn/call sequences, battlecards, KPIs, playbooks, sales-ops setup, prospecting plans, n8n automations), tests them for truth and quality, and hands back **one next action**.
+
+It is also your **SDR and sales-enablement assistant**: research accounts, find leads, verify emails, send approved emails, keep HubSpot clean, and track daily activity — with every external action waiting for your approval.
 
 Built on **Vercel AI SDK v7** · **Cloudflare Agents** (durable runs) · **LangSmith** (tracing + evals) · **Supabase** (Postgres + RLS) · **Next.js 16**.
 
@@ -40,6 +42,9 @@ That's it. With no keys the app runs in **demo mode**: the full 8-stage pipeline
 | `CF_AGENT_URL` + `CF_AGENT_SECRET` | Long builds & approvals survive timeouts via a Cloudflare durable agent |
 | `WORKFLOW_WEBHOOK_URL` | "Send to workflow" delivers approved packages to n8n / Make / Zapier |
 | `ENABLY_ACCESS_CODE` | Password-protects the app (set this before deploying publicly) |
+| `SERPAPI_API_KEY`, `APOLLO_API_KEY`, `HUNTER_API_KEY`, `HUBSPOT_ACCESS_TOKEN`, `RESEND_API_KEY` | SDR tools: research, prospecting, verification, CRM, email — see [`docs/CONNECTORS.md`](docs/CONNECTORS.md) |
+| `ENABLY_MCP_SERVERS` | Plug in Clay, Zoho, HubSpot, Attio or your n8n via MCP |
+| `ENABLY_MCP_TOKEN` | Use Enably itself from Claude, Cursor or n8n at `/api/mcp` |
 
 3. Stop the server (Ctrl + C) and run `npm run dev` again. **Settings** in the app shows what's connected.
 
@@ -79,6 +84,7 @@ The whole run is orchestrated in `lib/agent/pipeline.ts` and streamed to the cha
 |---|---|
 | `/` | Marketing landing page |
 | `/app` | **Architect** — the chat agent, with a live run inspector |
+| `/app/activity` | Sales activity tracker + do-not-contact list (or just say *“log 3 cold calls to Acme”*) |
 | `/app/runs` | Every run's manifest: inputs, W, plan, quality, artifacts, LangSmith link |
 | `/app/library` | All assets — edit, approve, copy, download `.md` |
 | `/app/knowledge` | Upload docs / paste notes / add web pages the agent learns from |
@@ -98,6 +104,7 @@ lib/agent/           AI layer: models, skills loader, tools, pipeline orchestrat
 lib/db/              Database: local file store or Supabase (same interface)
 lib/observability/   LangSmith tracing
 lib/durable/         Client for the Cloudflare durable agent
+lib/connectors/      SDR connectors (Apollo, HubSpot, Hunter, Resend…), MCP client hub
 agent/               The agent's "brain" in plain Markdown/YAML — skills, instructions, agents, n8n workflows
 workers/gtm-durable/ Cloudflare Agents worker (Durable Objects)
 supabase/migrations/ Database schema with row-level security
@@ -120,6 +127,13 @@ legacy/python/       The earlier Python bootstrap (kept for reference; its tests
 | `npm run build` | Production build |
 | `npm run cf:dev` / `npm run cf:deploy` | Run / deploy the Cloudflare durable agent (run `npm install` in `workers/gtm-durable` first) |
 
+## Docs
+
+- [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — connectors, approvals, MCP in both directions
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — Vercel, Supabase, Cloudflare, LangSmith
+- [`docs/PRD-STATUS.md`](docs/PRD-STATUS.md) — the original PRD vs. what is built
+- [`docs/BEST-PRACTICES.md`](docs/BEST-PRACTICES.md) — what came from which past build
+
 ## Deploy
 
 See [`docs/DEPLOY.md`](docs/DEPLOY.md) for step-by-step Vercel, Supabase, Cloudflare and LangSmith setup.
@@ -127,6 +141,7 @@ See [`docs/DEPLOY.md`](docs/DEPLOY.md) for step-by-step Vercel, Supabase, Cloudf
 ## Safety rules (enforced in code)
 
 - Nothing is sent, published, or written to a CRM without a human clicking **Approve**.
+- Sends check the do-not-contact list and a daily cap first.
 - The agent never builds on an incomplete foundation (W < 1.00).
 - Invented emails, phone numbers, statistics, dollar figures and customer names are flagged.
 - Secrets live only in server environment variables — never in the browser, prompts, or artifacts.

@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BookOpen, Boxes, FlaskConical, Library, Menu, MessageSquarePlus, Settings, Workflow, X } from "lucide-react";
+import { Activity, BookOpen, Boxes, FlaskConical, Library, Menu, MessageSquarePlus, Settings, Workflow, X } from "lucide-react";
 import { Logo } from "./brand";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/app", label: "Architect", icon: MessageSquarePlus, exact: true },
+  { href: "/app/activity", label: "Activity", icon: Activity },
   { href: "/app/runs", label: "Runs", icon: Workflow },
   { href: "/app/library", label: "Library", icon: Library },
   { href: "/app/knowledge", label: "Knowledge", icon: BookOpen },

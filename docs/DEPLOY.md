@@ -69,6 +69,10 @@ The payload is:
 { "event": "enably.package.approved", "purpose": "...", "run": { "id": "...", "title": "...", "quality": 94, "nextAction": {} }, "artifacts": [{ "id": "...", "title": "...", "kind": "icp", "markdown": "..." }] }
 ```
 
+## 6. Connectors & MCP
+
+Add any SDR keys you have (`SERPAPI_API_KEY`, `APOLLO_API_KEY`, `HUNTER_API_KEY`, `HUBSPOT_ACCESS_TOKEN`, `RESEND_API_KEY` + `ENABLY_SENDER_EMAIL` + `ENABLY_SENDER_FOOTER`) and run `supabase/migrations/0002_sales_activity.sql`. Full guide: [`CONNECTORS.md`](CONNECTORS.md).
+
 ## Inbound: start a run from a form or webhook
 
 `POST /api/runs` with JSON:
