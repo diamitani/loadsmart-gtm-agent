@@ -7,6 +7,11 @@ import { getModel, modelLabel } from "@/lib/agent/models";
 import { systemInstructions } from "@/lib/agent/skills";
 import { getStore } from "@/lib/db";
 import { decideMode } from "@/lib/agent/router";
+import { sdrTools } from "@/lib/connectors/sdr-tools";
+import { loadMcpTools } from "@/lib/connectors/mcp";
+import { connectorStatus } from "@/lib/connectors/registry";
+import { quickAction } from "@/lib/agent/quick-actions";
+import { skillText } from "@/lib/agent/skills";
 import { nowIso } from "@/lib/utils";
 import { presentationMarkdown } from "@/lib/agent/present";
 
@@ -33,6 +38,7 @@ export async function POST(req: Request) {
   const mode = decideMode(latest, lastRun, messages);
 
   let runId = lastRun?.id;
+  let closeMcp: (() => Promise<void>) | undefined;
   let pending = existing?.pending ?? [];
 
   const stream = createUIMessageStream<EnablyUIMessage>({
@@ -95,6 +101,11 @@ export async function POST(req: Request) {
       // chat mode
       const model = getModel("main");
       if (!model) {
+        const quick = await quickAction(latest);
+        if (quick) {
+          writeText(writer, quick);
+          return;
+        }
         writeText(
           writer,
           "I'm running in **demo mode** (no model key), so I can build full packages but can't hold a free-form conversation yet.\n\n- Start a new request — e.g. *“Build an ICP and email sequence for our AI bookkeeping tool for 10–50 person agencies.”*\n- Or open the **Library** to edit assets directly.\n\nAdd `AI_GATEWAY_API_KEY` (or `ANTHROPIC_API_KEY`) to unlock revisions, knowledge search, and approval-gated workflow delivery.",
@@ -102,12 +113,21 @@ export async function POST(req: Request) {
         return;
       }
       const run = runId ? await store.getRun(runId) : null;
+      const mcp = await loadMcpTools();
+      closeMcp = mcp.close;
+      const connected = connectorStatus().filter((c) => c.configured).map((c) => `${c.name} (${c.ops.join(", ")})`);
       const result = streamText({
         model,
-        system: `${systemInstructions()}\n\n## Current package\n${run ? `Run ${run.id}: ${run.title}. Quality ${run.quality?.score ?? "—"}/100. Use list_artifacts / get_artifact to read assets before revising them. Save improvements with revise_artifact.` : "No package yet."}`,
+        system: [
+          systemInstructions(),
+          `## Current package\n${run ? `Run ${run.id}: ${run.title}. Quality ${run.quality?.score ?? "—"}/100. Use list_artifacts / get_artifact to read assets before revising them. Save improvements with revise_artifact.` : "No package yet."}`,
+          `## Connected systems\n${connected.length ? connected.map((c) => `- ${c}`).join("\n") : "- None. If a tool returns 'not connected', tell the user which env var enables it (Settings → Connectors). Never pretend a call happened."}${mcp.servers.length ? `\n- MCP servers: ${mcp.servers.map((s) => `${s.name} (${s.ok ? `${s.tools} tools` : `unavailable: ${s.error}`})`).join(", ")}` : ""}`,
+          `## Skill: SDR Assistant\n${skillText("sdr-assistant", 3000)}`,
+          `## Skill: Sales Enablement\n${skillText("sales-enablement", 2500)}`,
+        ].join("\n\n"),
         messages: await convertToModelMessages(messages, { ignoreIncompleteToolCalls: true }),
-        tools: architectTools({ runId }),
-        stopWhen: stepCountIs(8),
+        tools: { ...architectTools({ runId }), ...sdrTools(), ...mcp.tools },
+        stopWhen: stepCountIs(10),
         telemetry: { functionId: "enably.chat" },
       });
       writer.merge(result.toUIMessageStream({ sendStart: false }));
@@ -117,6 +137,7 @@ export async function POST(req: Request) {
       return err instanceof Error ? err.message : "Something went wrong";
     },
     onEnd: async ({ messages: finalMessages }) => {
+      await closeMcp?.();
       const firstUser = textOf(finalMessages.find((m) => m.role === "user"));
       await store.saveConversation({
         id: conversationId,

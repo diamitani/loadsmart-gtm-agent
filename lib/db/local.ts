@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Artifact, RunRecord } from "@/lib/pal/types";
-import type { AuditEvent, Conversation, EvalRun, KnowledgeDoc, Store } from "./types";
+import type { Activity, AuditEvent, Conversation, EvalRun, KnowledgeDoc, Store, Suppression } from "./types";
 import { newId, nowIso } from "@/lib/utils";
 
 /**
@@ -17,9 +17,11 @@ interface Data {
   knowledge: Record<string, KnowledgeDoc>;
   evals: Record<string, EvalRun>;
   audit: AuditEvent[];
+  activities: Activity[];
+  suppressions: Record<string, Suppression>;
 }
 
-const empty = (): Data => ({ conversations: {}, runs: {}, artifacts: {}, knowledge: {}, evals: {}, audit: [] });
+const empty = (): Data => ({ conversations: {}, runs: {}, artifacts: {}, knowledge: {}, evals: {}, audit: [], activities: [], suppressions: {} });
 
 const FILE = path.join(process.cwd(), ".data", "enably.json");
 const canPersist = !process.env.VERCEL && !process.env.ENABLY_EPHEMERAL;
@@ -136,6 +138,29 @@ export function createLocalStore(workspaceId: string): Store {
         }
       }
       return Object.values(d().evals).sort(byNewest).slice(0, limit);
+    },
+    async logActivity(a) {
+      d().activities.unshift(a);
+      d().activities = d().activities.slice(0, 5000);
+      persist();
+    },
+    async listActivities(filter = {}) {
+      return d()
+        .activities.filter((a) => (!filter.since || a.occurredAt >= filter.since) && (!filter.account || a.account.toLowerCase().includes(filter.account.toLowerCase())))
+        .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+        .slice(0, filter.limit ?? 500);
+    },
+    async addSuppression(s) {
+      d().suppressions[s.value.toLowerCase()] = { ...s, value: s.value.toLowerCase() };
+      persist();
+    },
+    async isSuppressed(v) {
+      const value = v.toLowerCase().trim();
+      const domain = value.includes("@") ? value.split("@")[1] : value;
+      return !!(d().suppressions[value] || d().suppressions[domain]);
+    },
+    async listSuppressions() {
+      return Object.values(d().suppressions).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
     async audit(e) {
       d().audit.unshift({ id: newId("evt"), at: nowIso(), workspaceId, ...e });

@@ -10,7 +10,7 @@ export function proxy(req: NextRequest) {
   const code = process.env.ENABLY_ACCESS_CODE;
   if (!code) return NextResponse.next();
   const { pathname } = req.nextUrl;
-  if (pathname.startsWith("/api/access") || pathname.startsWith("/api/health") || /^\/api\/runs\/[^/]+\/(continue|approved|reminder)$/.test(pathname)) {
+  if (pathname.startsWith("/api/access") || pathname.startsWith("/api/health") || pathname.startsWith("/api/mcp") || /^\/api\/runs\/[^/]+\/(continue|approved|reminder)$/.test(pathname)) {
     return NextResponse.next();
   }
   if (req.cookies.get("enably_access")?.value === code) return NextResponse.next();

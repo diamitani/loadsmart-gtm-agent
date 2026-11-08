@@ -53,6 +53,32 @@ export interface AuditEvent {
   detail?: Record<string, unknown>;
 }
 
+export const ACTIVITY_TYPES = ["call", "email", "linkedin", "dm", "meeting", "post", "sms", "note"] as const;
+export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+
+/** Sales activity tracker entry (Enably Sales Enablement Assistant). */
+export interface Activity {
+  id: string;
+  workspaceId: string;
+  type: ActivityType;
+  account: string;
+  contact?: string;
+  count: number;
+  stage?: "cold" | "follow_up" | "closing" | "other";
+  notes?: string;
+  occurredAt: string;
+  createdAt: string;
+  /** Set when the activity was mirrored to an external CRM. */
+  crmRef?: string;
+}
+
+/** Opt-outs and do-not-contact entries. Checked before every send. */
+export interface Suppression {
+  value: string; // email or domain, lower-cased
+  reason: string;
+  createdAt: string;
+}
+
 export interface Store {
   readonly driver: "local" | "supabase";
   // conversations
@@ -76,6 +102,12 @@ export interface Store {
   // evals
   saveEval(e: EvalRun): Promise<void>;
   listEvals(limit?: number): Promise<EvalRun[]>;
+  // sales activity + compliance
+  logActivity(a: Activity): Promise<void>;
+  listActivities(filter?: { since?: string; account?: string; limit?: number }): Promise<Activity[]>;
+  addSuppression(s: Suppression): Promise<void>;
+  isSuppressed(emailOrDomain: string): Promise<boolean>;
+  listSuppressions(): Promise<Suppression[]>;
   // audit
   audit(e: Omit<AuditEvent, "id" | "at" | "workspaceId">): Promise<void>;
   listAudit(limit?: number): Promise<AuditEvent[]>;

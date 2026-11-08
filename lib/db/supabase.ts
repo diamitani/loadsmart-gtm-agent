@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Artifact, RunRecord } from "@/lib/pal/types";
-import type { AuditEvent, Conversation, EvalRun, KnowledgeDoc, Store } from "./types";
+import type { Activity, AuditEvent, Conversation, EvalRun, KnowledgeDoc, Store, Suppression } from "./types";
 import { newId, nowIso } from "@/lib/utils";
 
 /**
@@ -160,6 +160,39 @@ export function createSupabaseStore(url: string, serviceKey: string, workspaceId
       );
     },
 
+    async logActivity(a) {
+      must(
+        await db.from("activities").insert({
+          id: a.id, workspace_id: ws, type: a.type, account: a.account, contact: a.contact ?? null, count: a.count,
+          stage: a.stage ?? null, notes: a.notes ?? null, occurred_at: a.occurredAt, created_at: a.createdAt, crm_ref: a.crmRef ?? null,
+        }),
+      );
+    },
+    async listActivities(filter = {}) {
+      let q = db.from("activities").select("*").eq("workspace_id", ws);
+      if (filter.since) q = q.gte("occurred_at", filter.since);
+      if (filter.account) q = q.ilike("account", `%${filter.account}%`);
+      const rows = must(await q.order("occurred_at", { ascending: false }).limit(filter.limit ?? 500));
+      return (rows ?? []).map(
+        (r): Activity => ({
+          id: r.id, workspaceId: r.workspace_id, type: r.type, account: r.account, contact: r.contact ?? undefined, count: r.count,
+          stage: r.stage ?? undefined, notes: r.notes ?? undefined, occurredAt: r.occurred_at, createdAt: r.created_at, crmRef: r.crm_ref ?? undefined,
+        }),
+      );
+    },
+    async addSuppression(s) {
+      must(await db.from("suppressions").upsert({ workspace_id: ws, value: s.value.toLowerCase(), reason: s.reason, created_at: s.createdAt }));
+    },
+    async isSuppressed(v) {
+      const value = v.toLowerCase().trim();
+      const domain = value.includes("@") ? value.split("@")[1] : value;
+      const rows = must(await db.from("suppressions").select("value").eq("workspace_id", ws).in("value", [value, domain]).limit(1));
+      return (rows ?? []).length > 0;
+    },
+    async listSuppressions() {
+      const rows = must(await db.from("suppressions").select("*").eq("workspace_id", ws).order("created_at", { ascending: false }));
+      return (rows ?? []).map((r): Suppression => ({ value: r.value, reason: r.reason, createdAt: r.created_at }));
+    },
     async audit(e) {
       must(
         await db.from("audit_events").insert({
