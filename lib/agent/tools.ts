@@ -6,6 +6,8 @@ import { env } from "@/lib/env";
 import { search } from "./knowledge";
 import { scanText } from "@/lib/pal/truth-guard";
 import { trace } from "@/lib/observability/langsmith";
+import { ingestUrl } from "./fetch-url";
+import { newId, nowIso } from "@/lib/utils";
 
 /**
  * Tools the Architect can call in conversation (after a package exists).
@@ -21,6 +23,23 @@ export function architectTools(ctx: { runId?: string }) {
       execute: trace("tool.search_knowledge", async ({ query }: { query: string }) => {
         const hits = search(await store.listKnowledge(), query, 5);
         return hits.length ? hits : { note: "No matching knowledge. Ask the user or use a {{variable}}." };
+      }, { runType: "retriever" }),
+    }),
+
+    read_document: tool({
+      description:
+        "Read any public URL — web page, PDF, Word/PowerPoint/Excel, image/screenshot (OCR or vision), or audio/video (transcribed with Whisper). Optionally save it to the knowledge base so the build pipeline can cite it.",
+      inputSchema: z.object({ url: z.string().url(), save_to_knowledge: z.boolean().default(true) }),
+      execute: trace("tool.read_document", async ({ url, save_to_knowledge }: { url: string; save_to_knowledge: boolean }) => {
+        try {
+          const r = await ingestUrl(url);
+          if (save_to_knowledge && r.text.trim()) {
+            await store.addKnowledge({ id: newId("kb"), workspaceId: "default", name: r.name || url, kind: "url", source: url, text: r.text.slice(0, 400_000), chars: r.text.length, createdAt: nowIso() });
+          }
+          return { name: r.name, method: r.method, pages: r.pages, chars: r.text.length, saved: save_to_knowledge, warnings: r.warnings, text: r.text.slice(0, 12000) };
+        } catch (err) {
+          return { error: (err as Error).message };
+        }
       }, { runType: "retriever" }),
     }),
 

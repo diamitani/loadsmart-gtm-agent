@@ -43,6 +43,7 @@ That's it. With no keys the app runs in **demo mode**: the full 8-stage pipeline
 | `WORKFLOW_WEBHOOK_URL` | "Send to workflow" delivers approved packages to n8n / Make / Zapier |
 | `ENABLY_ACCESS_CODE` | Password-protects the app (set this before deploying publicly) |
 | `SERPAPI_API_KEY`, `APOLLO_API_KEY`, `HUNTER_API_KEY`, `HUBSPOT_ACCESS_TOKEN`, `RESEND_API_KEY` | SDR tools: research, prospecting, verification, CRM, email — see [`docs/CONNECTORS.md`](docs/CONNECTORS.md) |
+| `DOCLING_URL`, `TRANSCRIBE_BASE_URL` | Scanned PDFs/tables via self-hosted Docling; audio & video transcripts via Whisper — both free to self-host ([`docs/MULTIMODAL.md`](docs/MULTIMODAL.md)) |
 | `ENABLY_MCP_SERVERS` | Plug in Clay, Zoho, HubSpot, Attio or your n8n via MCP |
 | `ENABLY_MCP_TOKEN` | Use Enably itself from Claude, Cursor or n8n at `/api/mcp` |
 
@@ -87,7 +88,7 @@ The whole run is orchestrated in `lib/agent/pipeline.ts` and streamed to the cha
 | `/app/activity` | Sales activity tracker + do-not-contact list (or just say *“log 3 cold calls to Acme”*) |
 | `/app/runs` | Every run's manifest: inputs, W, plan, quality, artifacts, LangSmith link |
 | `/app/library` | All assets — edit, approve, copy, download `.md` |
-| `/app/knowledge` | Upload docs / paste notes / add web pages the agent learns from |
+| `/app/knowledge` | Upload PDFs, Word, PowerPoint, Excel, screenshots (OCR/vision), audio & video (transcribed), notes or links — the agent learns from all of it |
 | `/app/agents` | The orchestrator, 9 specialist subagents, and the skill library |
 | `/app/evals` | Eval results (from `npm run eval`) |
 | `/app/settings` | Integration status + audit log |
@@ -129,6 +130,7 @@ legacy/python/       The earlier Python bootstrap (kept for reference; its tests
 
 ## Docs
 
+- [`docs/MULTIMODAL.md`](docs/MULTIMODAL.md) — documents, OCR, vision, audio & video (free stack)
 - [`docs/CONNECTORS.md`](docs/CONNECTORS.md) — connectors, approvals, MCP in both directions
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — Vercel, Supabase, Cloudflare, LangSmith
 - [`docs/PRD-STATUS.md`](docs/PRD-STATUS.md) — the original PRD vs. what is built

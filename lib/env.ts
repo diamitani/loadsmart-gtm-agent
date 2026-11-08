@@ -40,6 +40,8 @@ export function integrationStatus() {
     { id: "langsmith", label: "LangSmith tracing & evals", ok: e.langsmithEnabled, detail: e.langsmithEnabled ? `Project: ${e.langsmithProject}` : "Off — traces print nowhere", env: "LANGSMITH_API_KEY (+ LANGSMITH_PROJECT)" },
     { id: "durable", label: "Cloudflare durable agent", ok: !!e.durableUrl, detail: e.durableUrl ? "Long runs + approvals hand off to Durable Objects" : "Off — runs execute inline", env: "CF_AGENT_URL + CF_AGENT_SECRET" },
     { id: "webhook", label: "Workflow delivery (n8n / Make / Zapier)", ok: !!e.workflowWebhookUrl, detail: e.workflowWebhookUrl ? "Approval-gated webhook configured" : "Off — packages stay in the Library", env: "WORKFLOW_WEBHOOK_URL" },
+    { id: "ingest", label: "Docs, OCR & vision", ok: true, detail: `PDF/Word/PowerPoint/Excel + OCR built in${e.provider !== "demo" ? " · model vision for images & scans" : ""}${process.env.DOCLING_URL ? " · Docling" : ""}`, env: "DOCLING_URL (optional)" },
+    { id: "transcribe", label: "Audio & video transcription", ok: !!process.env.TRANSCRIBE_BASE_URL, detail: process.env.TRANSCRIBE_BASE_URL ? `Whisper · ${process.env.TRANSCRIBE_MODEL || "whisper-large-v3-turbo"}` : "Off — add a free Whisper endpoint", env: "TRANSCRIBE_BASE_URL (+ TRANSCRIBE_API_KEY)" },
     { id: "access", label: "Access code", ok: !!e.accessCode, detail: e.accessCode ? "App is protected" : "Open — set before deploying publicly", env: "ENABLY_ACCESS_CODE" },
   ];
 }

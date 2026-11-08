@@ -18,7 +18,7 @@ Tracks the original *Enably Product Requirements Document* against this repo.
 | Sales activity tracker (Enablement Assistant) | ✅ | `/app/activity` |
 | Dashboard (projects, agents, docs, uploads) | ✅ Runs, Library, Knowledge, Agents | `/app/*` |
 | Auth (OAuth + Supabase Auth) | ⏳ access-code gate today; RLS policies ready | `proxy.ts` |
-| PDF / DOCX / PPT upload parsing | ⏳ text formats only | next step |
+| PDF / DOCX / PPT / XLSX parsing, OCR, vision, audio/video transcripts | ✅ free open-source stack | `lib/ingest`, `docs/MULTIMODAL.md` |
 | pgvector semantic search | ⏳ BM25 today, same interface | `lib/agent/knowledge.ts` |
 | PDF / DOCX export | ⏳ Markdown export today | next step |
 | Bi-directional CRM sync | ⏳ HubSpot write + read; scheduled sync not yet | — |

@@ -13,6 +13,8 @@ import { PipelineTracker, Waves, WGauge } from "@/components/pipeline";
 import { Badge, Button, Meter, verdictTone } from "@/components/ui";
 import { cn, fmtMs } from "@/lib/utils";
 
+const ACCEPT = ".pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg,.webp,.gif,.mp3,.m4a,.wav,.ogg,.flac,.mp4,.mov,.webm,.md,.markdown,.txt,.csv,.json,.html,.yaml,.yml";
+
 const STARTERS = [
   {
     label: "Full GTM starter pack",
@@ -67,8 +69,8 @@ export function Architect({ id, initialMessages, demo }: { id: string; initialMe
     [...files].forEach((f) => fd.append("files", f));
     const res = await fetch("/api/knowledge", { method: "POST", body: fd });
     const json = await res.json();
-    setNotice(res.ok ? `Added ${json.created.length} file(s) to Knowledge — the Architect will cite them.` : json.error);
-    setTimeout(() => setNotice(null), 5000);
+    setNotice(res.ok ? `Read ${json.created.map((c: { name: string; method: string }) => `${c.name} (${c.method})`).join(", ")} into Knowledge — the Architect will cite it.${json.errors?.length ? ` ${json.errors.join(" ")}` : ""}` : json.error);
+    setTimeout(() => setNotice(null), 8000);
   };
 
   const latestRun = [...messages].reverse().flatMap((m) => m.parts).find((p) => p.type === "data-run")?.data as RunCard | undefined;
@@ -104,7 +106,7 @@ export function Architect({ id, initialMessages, demo }: { id: string; initialMe
           >
             {notice && <div className="mb-2 rounded-lg bg-evergreen-soft px-3 py-1.5 text-xs text-evergreen">{notice}</div>}
             <div className="card flex items-end gap-2 p-2">
-              <input ref={fileRef} type="file" multiple accept=".md,.markdown,.txt,.csv,.json,.html,.yaml,.yml" className="hidden" onChange={(e) => upload(e.target.files)} />
+              <input ref={fileRef} type="file" multiple accept={ACCEPT} className="hidden" onChange={(e) => upload(e.target.files)} />
               <button type="button" onClick={() => fileRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted hover:bg-paper-2 hover:text-ink" aria-label="Attach files to knowledge">
                 <Paperclip className="h-4 w-4" />
               </button>

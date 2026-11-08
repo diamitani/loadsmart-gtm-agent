@@ -23,7 +23,7 @@ export function KnowledgeManager({ initial }: { initial: Doc[] }) {
     const res = await fetch("/api/knowledge", init);
     const json = await res.json();
     setBusy(false);
-    setMsg(res.ok ? { ok: true, text: `Added ${json.created.map((c: { name: string }) => c.name).join(", ")}` } : { ok: false, text: json.error ?? "Failed" });
+    setMsg(res.ok ? { ok: true, text: `Added ${json.created.map((c: { name: string; method: string }) => `${c.name} (${c.method})`).join(", ")}${json.errors?.length ? ` · ${json.errors.join(" ")}` : ""}` } : { ok: false, text: json.error ?? "Failed" });
     if (res.ok) {
       setText(""); setName(""); setUrl("");
       router.refresh();
@@ -37,7 +37,7 @@ export function KnowledgeManager({ initial }: { initial: Doc[] }) {
         <div className="flex gap-1">
           {(["text", "url", "file"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`rounded-full px-3 py-1.5 text-xs ${tab === t ? "bg-ink text-paper" : "text-muted hover:bg-paper-2"}`}>
-              {t === "text" ? "Paste text" : t === "url" ? "Web page" : "Upload files"}
+              {t === "text" ? "Paste text" : t === "url" ? "Web page / file link" : "Upload files"}
             </button>
           ))}
         </div>
@@ -51,15 +51,15 @@ export function KnowledgeManager({ initial }: { initial: Doc[] }) {
           )}
           {tab === "url" && (
             <>
-              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourcompany.com/about" className="w-full rounded-lg border hairline bg-paper px-3 py-2 text-sm outline-none focus:border-clay" />
+              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://… (page, PDF, deck, image, recording)" className="w-full rounded-lg border hairline bg-paper px-3 py-2 text-sm outline-none focus:border-clay" />
               <Button disabled={busy || !/^https?:\/\//.test(url)} onClick={() => submit(json({ url }))}>Fetch & add</Button>
             </>
           )}
           {tab === "file" && (
             <>
-              <input ref={fileRef} type="file" multiple accept=".md,.markdown,.txt,.csv,.json,.html,.yaml,.yml" className="block w-full text-sm text-muted file:mr-3 file:rounded-full file:border-0 file:bg-paper-2 file:px-3 file:py-1.5 file:text-xs" />
+              <input ref={fileRef} type="file" multiple accept=".pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg,.webp,.gif,.mp3,.m4a,.wav,.ogg,.flac,.mp4,.mov,.webm,.md,.markdown,.txt,.csv,.json,.html,.yaml,.yml" className="block w-full text-sm text-muted file:mr-3 file:rounded-full file:border-0 file:bg-paper-2 file:px-3 file:py-1.5 file:text-xs" />
               <Button disabled={busy} onClick={() => { const fd = new FormData(); [...(fileRef.current?.files ?? [])].forEach((f) => fd.append("files", f)); submit({ method: "POST", body: fd }); }}><Upload className="h-4 w-4" /> Upload</Button>
-              <p className="text-[11px] text-faint">Text formats only for now (.md, .txt, .csv, .json, .html). For PDFs or Word docs, paste the text.</p>
+              <p className="text-[11px] text-faint">PDF, Word, PowerPoint, Excel, images (OCR / vision), audio &amp; video (transcribed), text. Up to 4 MB per upload — use <b>Web page / file link</b> for bigger files (up to 25 MB).</p>
             </>
           )}
           {msg && <p className={`text-xs ${msg.ok ? "text-evergreen" : "text-rose"}`}>{msg.text}</p>}

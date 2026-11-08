@@ -8,7 +8,7 @@
  *   mcp     — reached through an MCP server listed in ENABLY_MCP_SERVERS
  *   webhook — reached through your n8n / Make / Zapier workflow
  */
-export type ConnectorCategory = "research" | "prospecting" | "verification" | "email" | "crm" | "data" | "automation";
+export type ConnectorCategory = "documents" | "research" | "prospecting" | "verification" | "email" | "crm" | "data" | "automation";
 
 export interface ConnectorDef {
   id: string;
@@ -24,6 +24,9 @@ export interface ConnectorDef {
 }
 
 export const CONNECTORS: ConnectorDef[] = [
+  { id: "builtin-parsers", name: "Built-in parsers + OCR", category: "documents", mode: "native", env: [], ops: ["PDF (unpdf)", "Word (mammoth)", "PowerPoint/Excel (fflate)", "image OCR (tesseract.js)"], notes: "Open source, runs inside the app, always on, $0.", docs: "https://github.com/naptha/tesseract.js" },
+  { id: "docling", name: "Docling (self-hosted)", category: "documents", mode: "native", env: ["DOCLING_URL"], ops: ["scanned PDFs", "tables & layout", "Office docs"], notes: "IBM's open-source converter (MIT). Free when self-hosted with Docker.", docs: "https://github.com/docling-project/docling-serve" },
+  { id: "whisper", name: "Whisper transcription", category: "documents", mode: "native", env: ["TRANSCRIBE_BASE_URL"], ops: ["audio & video → timestamped transcript"], notes: "Any OpenAI-compatible endpoint: self-hosted Speaches / faster-whisper ($0) or Groq free tier.", docs: "https://github.com/speaches-ai/speaches" },
   { id: "jina", name: "Jina Reader", category: "research", mode: "native", env: [], optionalEnv: ["JINA_API_KEY"], ops: ["research_web (read URL)"], notes: "Works without a key at low rate limits; key raises limits and enables search.", docs: "https://jina.ai/reader" },
   { id: "serpapi", name: "SerpAPI", category: "research", mode: "native", env: ["SERPAPI_API_KEY"], ops: ["research_web (search)"], docs: "https://serpapi.com/search-api" },
   { id: "apollo", name: "Apollo.io", category: "prospecting", mode: "native", env: ["APOLLO_API_KEY"], ops: ["prospect_leads", "enrich_contact"], notes: "People API Search returns profiles without emails; enrichment consumes credits.", docs: "https://docs.apollo.io/reference/people-api-search" },

@@ -26,14 +26,18 @@
     "@supabase/supabase-js": "^2.119.0",
     "ai": "^7.0.165",
     "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
     "langsmith": "^0.11.8",
     "lucide-react": "^1.70.0",
+    "mammoth": "^1.13.0",
     "next": "^16.4.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
     "streamdown": "^2.7.1",
     "tailwind-merge": "^3.7.0",
+    "tesseract.js": "^7.0.0",
+    "unpdf": "^2.1.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
