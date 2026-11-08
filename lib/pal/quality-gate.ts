@@ -24,6 +24,8 @@ export const REQUIRED_SECTIONS: Record<string, RegExp[]> = {
   launch_plan: [/week|phase|milestone/i],
   prospecting_plan: [/signal/i, /limit|budget|cap/i],
   automation_blueprint: [/trigger/i, /approval|human/i],
+  use_cases: [/use case/i, /outcome/i],
+  sales_ops_plan: [/dns|dmarc|dkim|spf/i, /crm/i, /sequence|automation/i],
 };
 
 export function qualityGate(input: {

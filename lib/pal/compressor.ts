@@ -28,6 +28,8 @@ export const ASSET_DEPS: Record<AssetKind, (AssetKind | "research")[]> = {
   launch_plan: ["positioning", "kpi_scorecard"],
   prospecting_plan: ["icp"],
   automation_blueprint: ["icp"],
+  use_cases: ["personas"],
+  sales_ops_plan: ["icp", "kpi_scorecard"],
 };
 
 const EST_MS: Partial<Record<AssetKind | "research", number>> = {

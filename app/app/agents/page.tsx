@@ -16,6 +16,8 @@ const SUBAGENTS: { id: string; role: string }[] = [
   { id: "playbook", role: "Playbook Architect" },
   { id: "prospector", role: "Prospector" },
   { id: "n8n-engineer", role: "Automation Engineer" },
+  { id: "use-cases", role: "Use Case Architect" },
+  { id: "sales-ops-setup", role: "Sales Ops Architect" },
 ];
 
 export default function AgentsPage() {

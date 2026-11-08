@@ -20,6 +20,8 @@ export const SKILL_FOR: Record<AssetKind, string> = {
   launch_plan: "playbook",
   prospecting_plan: "prospector",
   automation_blueprint: "n8n-engineer",
+  use_cases: "use-cases",
+  sales_ops_plan: "sales-ops-setup",
 };
 
 const cache = new Map<string, string>();

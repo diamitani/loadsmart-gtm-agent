@@ -87,6 +87,8 @@ export const ASSET_KINDS = [
   "launch_plan",
   "prospecting_plan",
   "automation_blueprint",
+  "use_cases",
+  "sales_ops_plan",
 ] as const;
 export type AssetKind = (typeof ASSET_KINDS)[number];
 

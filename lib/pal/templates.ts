@@ -30,31 +30,55 @@ export function assetTemplate(kind: AssetKind, ctx: TemplateCtx): string {
   switch (kind) {
     case "icp":
       return `${header}
+## Segment
+**${icp}** — one segment per ICP (never mix segments; ask for a separate ICP per vertical, size band or motion).
+
 ## Firmographics
 | Attribute | Fit | Notes |
 |---|---|---|
-| Company type | ${icp} | Primary segment |
 | Industry | ${v(i.industry, "industry")} | |
+| Company size (employees / revenue) | [ASSUMPTION: 10–200 employees] | Validate against your best 5 customers |
 | Geography | ${v(i.geography, "region")} | |
-| Size (employees) | [ASSUMPTION: 10–200] | Validate against your best 5 customers |
+| Department / buyer role | {{buyer_role}} | Economic buyer + champion |
 | Tech signals | {{tools_they_use}} | e.g. CRM, data stack |
 
-## Pains & buying triggers
-1. **Pain:** the job ${offer} solves is done manually, slowly, or not at all.
-2. **Trigger:** new leader in the buying role (first 90 days).
-3. **Trigger:** hiring for the role your product augments.
-4. **Trigger:** funding, expansion, or a new market launch.
+## Primary pain points
+1. The job ${offer} solves is done manually, slowly, or not at all.
+2. {{pain_in_their_words}} — capture from calls, not guesses.
+
+## Goals & KPIs
+- The metric the buyer is judged on: {{buyer_kpi}}
+- What "better" looks like in 90 days: {{target_outcome}}
+
+## Buying triggers
+1. New leader in the buying role (first 90 days).
+2. Hiring for the role your product augments.
+3. Funding, expansion, or a new market launch.
+
+## Buying objections
+- "We already have something for this." · "Not a priority this quarter." · Integration effort.
+
+## Preferred channels & messaging tone
+- Channels: {{email_linkedin_events}} · Tone: outcome-driven, specific, no jargon.
+
+## Proof points
+- {{case_study_or_metric}} *(only verified proof — never invented)*
 
 ## Qualification (MEDDIC-lite)
 - **Metric** they'd move · **Economic buyer** identified · **Pain** confirmed in their words · **Timeline** this quarter.
 
 ## Disqualifiers (not a fit)
-- No owner for the problem · budget frozen · already mid-contract with a direct alternative (revisit at renewal).
+- No owner for the problem · budget frozen · mid-contract with a direct alternative (revisit at renewal).
 
 ## Account tiers
 - **Tier 1:** perfect fit + active trigger → 1:1 personalised outreach.
 - **Tier 2:** perfect fit, no trigger → signal-watch + light sequence.
 - **Tier 3:** partial fit → nurture only.
+
+## JSON (for CRM / Clay import)
+\`\`\`json
+${JSON.stringify({ segment_name: i.icp ?? "{{segment}}", industry: i.industry ?? "{{industry}}", company_size: "{{employees}}", geography: i.geography ?? "{{geo}}", buyer_role: "{{buyer_role}}", pain_points: ["{{pain_1}}"], goals_kpis: ["{{kpi_1}}"], buying_triggers: ["new leader", "hiring", "funding"], buying_objections: ["{{objection_1}}"], preferred_channels: ["Email", "LinkedIn"], messaging_tone: "outcome-driven" }, null, 2)}
+\`\`\`
 `;
     case "personas":
       return `${header}
@@ -253,6 +277,60 @@ Default cap: 10 companies · 2 contacts each · no paid spend [ASSUMPTION: free 
 
 ## Output
 Scored lead list (evidence per lead) → review → CRM import only after approval.
+`;
+    case "use_cases":
+      return `${header}
+Format per use case: **who → trigger → before → after → outcome → proof**. One persona per use case.
+
+## Use case 1 — ${f.jtbd.functionalJob}
+- **Who:** ${icp}, {{buyer_role}}
+- **Trigger:** ${f.jtbd.trigger}
+- **Before:** ${f.jtbd.struggle}
+- **After:** ${offer} handles {{job_step}} automatically
+- **Outcome:** ${f.jtbd.desiredOutcome}
+- **Proof:** {{customer_story_or_metric}}
+
+## Use case 2 — {{secondary_job}}
+- **Who:** {{champion_role}} · **Trigger:** {{event}} · **Outcome:** {{outcome}}
+
+## Use case 3 — {{expansion_job}}
+- **Who:** {{adjacent_team}} · **Trigger:** {{event}} · **Outcome:** {{outcome}}
+
+## How sales uses this
+Pick the use case that matches the prospect's trigger; lead the first email with its *Before → After*.
+`;
+    case "sales_ops_plan":
+      return `${header}
+Six steps from zero to a running revenue engine. Each step has an owner and a done-when.
+
+## 1. Sales playbook
+Brand identity, USPs and target customers (ICP) · sales goals, KPIs and activity metrics · the processes, platforms and people in the funnel. **Done when:** the playbook is approved.
+
+## 2. Sales messaging
+Scripts for email, phone, SMS and social DMs · assets for presentations, case studies, pricing · SOPs for internal/external use. **Done when:** every channel has an approved script.
+
+## 3. Prospect data
+Lead-gen system (Clay / Apollo / permitted APIs) · contacts for each ICP tier · AI research insights per company. **Done when:** Tier-1 list is built and suppression-screened.
+
+## 4. Email DNS & deliverability
+- Use a **separate sending domain or subdomain** — never your primary domain.
+- Configure **SPF**, **DKIM** and **DMARC** (start DMARC at \`p=none\` with reporting, tighten later).
+- **Warm up** each new mailbox for 2–4 weeks; keep cold volume low per mailbox [ASSUMPTION: ≤ 30/day].
+**Done when:** SPF/DKIM/DMARC pass on a test send and warm-up is complete.
+
+## 5. CRM setup
+Select or integrate a CRM ({{crm}}) · define objects (accounts, contacts, deals) and properties · connect email, import contacts, upload templates. **Done when:** a test lead flows from import → deal stage.
+
+## 6. Automation system
+Sequencer ({{sequencer}}) · channels and sequence steps · CRM sync + reporting dashboard · n8n/Make for glue — every send and CRM write **approval-gated**. **Done when:** one sequence runs end to end with activity logged to the CRM.
+
+## Owners & timeline
+| Step | Owner | Week |
+|---|---|---|
+| Playbook + messaging | {{gtm_lead}} | 1 |
+| Prospect data + DNS | {{ops_owner}} | 1–2 |
+| CRM + automation | {{ops_owner}} | 2–3 |
+| Warm-up complete → launch | {{gtm_lead}} | 4 |
 `;
     case "automation_blueprint":
       return `${header}

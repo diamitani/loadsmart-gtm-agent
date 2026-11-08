@@ -21,6 +21,8 @@ const ASSET_PATTERNS: [AssetKind, RegExp][] = [
   ["gtm_playbook", /\b(playbook|sops?|sales process|enablement|gtm (plan|strategy|engine)|go[- ]to[- ]market (plan|strategy|engine))\b/i],
   ["launch_plan", /\b(launch|go[- ]live|release plan|rollout|campaign brief)\b/i],
   ["prospecting_plan", /\b(prospect(ing)?|lead (list|research|gen)|buying signals?|intent signals?|account research|find (leads|contacts))\b/i],
+  ["use_cases", /\b(use[- ]cases?|customer stor(y|ies)|scenarios?)\b/i],
+  ["sales_ops_plan", /\b(sales ops|sales operations|revops|rev ops|tech stack|crm setup|set ?up (a |my |our )?crm|deliverability|dmarc|dkim|spf|email domain|warm[- ]?up|domain warm)\b/i],
   ["automation_blueprint", /\b(n8n|make\.com|zapier|automat(e|ion)|workflow|webhook|clay|crm (setup|workflow)|mcp)\b/i],
 ];
 
@@ -235,4 +237,6 @@ export const ASSET_TITLES: Record<AssetKind, string> = {
   launch_plan: "Launch Plan",
   prospecting_plan: "Signal-Based Prospecting Plan",
   automation_blueprint: "Automation Blueprint (n8n / Make / Zapier)",
+  use_cases: "Use Case Library",
+  sales_ops_plan: "Sales Ops Setup Plan",
 };

@@ -10,3 +10,8 @@ subagents:
   playbook-architect:   { skill: skills/playbook,           assets: [gtm_playbook, launch_plan] }
   prospector:           { skill: skills/prospector,         assets: [prospecting_plan] }
   automation-engineer:  { skill: skills/n8n-engineer,       assets: [automation_blueprint] }
+  use-case-architect:   { skill: skills/use-cases,          assets: [use_cases] }
+  sales-ops-architect:  { skill: skills/sales-ops-setup,    assets: [sales_ops_plan] }
+  # Conversational (tool-using) specialists — run in chat mode, not as build nodes:
+  sdr-assistant:        { skill: skills/sdr-assistant,      tools: [research_web, prospect_leads, enrich_contact, verify_email, send_email, enroll_contacts_in_sequence, upsert_crm_record, log_crm_activity, find_crm_records, generate_personalization_snippets] }
+  enablement-assistant: { skill: skills/sales-enablement,   tools: [log_activity, activity_summary, generate_template] }
