@@ -1,0 +1,260 @@
+{
+  "name": "GTM Outbound Personalization Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Approval-gated outbound drafting\\nStart with sample fields, then replace the manual trigger with your CRM, list builder, or webhook trigger. Keep the approval gate before any send or sequence enrollment step.",
+        "height": 300,
+        "width": 760,
+        "color": 7
+      },
+      "id": "b18ecdf7-b306-4331-bf8e-b4c5329ef08f",
+      "name": "Sticky Note Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e9646ec9-5857-4e35-b270-cbe05dd3ec8d",
+      "name": "Trigger Manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4aa9706a-4627-4069-a620-a4ae98faf4aa",
+              "name": "approvedToDraft",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "12f847f2-3054-44eb-8d4b-d4b6077efae0",
+              "name": "firstName",
+              "value": "Avery",
+              "type": "string"
+            },
+            {
+              "id": "1f6d133a-259f-44e8-ae44-795a8583bcd5",
+              "name": "companyName",
+              "value": "Northwind Security",
+              "type": "string"
+            },
+            {
+              "id": "e02ee31f-2aee-45c1-9458-713326e5ee95",
+              "name": "title",
+              "value": "VP Revenue Operations",
+              "type": "string"
+            },
+            {
+              "id": "cc6e8dc8-f4c9-4c35-8f9e-8854d6c6b315",
+              "name": "recentSignal",
+              "value": "Hiring three SDR managers and launching a mid-market segment",
+              "type": "string"
+            },
+            {
+              "id": "93f024c5-6398-448b-9cb0-4c4b86f2c38e",
+              "name": "painPoint",
+              "value": "lead routing and follow-up speed",
+              "type": "string"
+            },
+            {
+              "id": "ee14dc4d-f439-4e0e-b7a8-a10de3c4c2c0",
+              "name": "offer",
+              "value": "an n8n-based revenue ops workflow audit",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f004133-1f4d-4bcd-abd6-0b50a30e68e8",
+      "name": "Set Sample Lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d6fdd8f6-67d6-4ae0-90f5-b3926523af06",
+              "leftValue": "={{ $json.approvedToDraft }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dabce5ec-2d2c-48ff-bdc7-f43a5dcb59ef",
+      "name": "Approved To Draft?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        740,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Replace with approval source\\nIf you already have a manager or rep approval system, replace the sample boolean with your real approval state. Keep this gate in front of any send or enrollment action.",
+        "height": 220,
+        "width": 320,
+        "color": 5
+      },
+      "id": "fae5f0a2-4706-4241-9f08-c0ee5f2ab9a2",
+      "name": "Sticky Note Approval",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "text": "=Write a concise personalized outbound email for {{$json.firstName}}, {{$json.title}} at {{$json.companyName}}. Use the recent signal: {{$json.recentSignal}}. Focus on the pain point: {{$json.painPoint}}. Offer: {{$json.offer}}. Keep it specific, credible, and easy to reply to.",
+        "options": {
+          "systemMessage": "You write outbound that sounds like a sharp operator, not a template machine. Ground the draft in the provided signal. Avoid fake specificity, hype, or claims not supported by the input."
+        }
+      },
+      "id": "3f83f08d-09e8-4b77-bde9-4c4d911a792f",
+      "name": "Draft Personalization",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1000,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "8f137a35-c0f2-4946-bc6a-ef04f4db4ab2",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1000,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "53ca120e-c931-4867-b7e2-79ff70950811",
+              "name": "status",
+              "value": "Drafting skipped because approval was not granted.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e88f7a0c-f63a-4980-b491-c1d52bf9d055",
+      "name": "Hold For Human Review",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1000,
+        420
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Manually": {
+      "main": [
+        [
+          {
+            "node": "Set Sample Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Sample Lead": {
+      "main": [
+        [
+          {
+            "node": "Approved To Draft?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved To Draft?": {
+      "main": [
+        [
+          {
+            "node": "Draft Personalization",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hold For Human Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft Personalization",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "43ec6f57-8731-463f-8f07-a981425f971c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

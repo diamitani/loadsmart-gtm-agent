@@ -1,0 +1,218 @@
+{
+  "name": "GTM Account Research Copilot",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Main workflow: GTM account research copilot\\nUse chat to request an account brief. The agent can call the sub-workflow below as a reusable research tool. Replace the sub-workflow body with your CRM, enrichment, and web research steps.",
+        "height": 360,
+        "width": 700,
+        "color": 7
+      },
+      "id": "1f1d7bd0-6224-4f59-bf1a-2c95fd2bbf01",
+      "name": "Sticky Note Main",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        220
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5ef471e3-8ce8-4a92-b28b-f534e1d21a77",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        360
+      ],
+      "webhookId": "d9e4fd04-055f-45ef-8328-f44f48866ce8"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a GTM account research engineer. Gather only the context needed to help a rep move the account forward. Prefer concrete signals, risks, stakeholders, and next-best actions. Use the research tool when the user asks for account intelligence, a briefing, or sales context."
+        }
+      },
+      "id": "73392540-3bd9-481f-9a49-1b9c0247aebc",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        740,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "eafdbf7c-04bd-46d2-8b40-7483f289fdf8",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        560
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "02218192-a385-4a54-a669-05f492562831",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "name": "account_research_tool",
+        "description": "Call this tool to assemble an account research packet or a rep briefing. Use it when the user asks for company context, website context, buyer signals, suggested messaging angles, or next-best actions.",
+        "workflowId": "={{ $workflow.id }}",
+        "fields": {
+          "values": [
+            {
+              "name": "chatInput",
+              "stringValue": "={{ $('Chat Trigger').item.json.chatInput }}"
+            }
+          ]
+        }
+      },
+      "id": "5cb26059-7ba0-4542-8928-562b1f07c861",
+      "name": "Account Research Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1,
+      "position": [
+        980,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Sub-workflow: reusable research packet\\nThis is where you wire the real retrieval stack: CRM reads, enrichment, website fetches, news, technographics, or internal notes. Return a `response` field because the calling tool expects it.",
+        "height": 320,
+        "width": 760,
+        "color": 6
+      },
+      "id": "7cb3d7ad-7418-4f40-bf83-7f16b8f3b875",
+      "name": "Sticky Note Subworkflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        820
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "da3f376d-bef3-4f41-b4ab-cba0b7706299",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        540,
+        980
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f7517ecb-6bc1-4d7d-a398-11a61aa9ef14",
+              "name": "response",
+              "value": "=Account research packet requested for: {{$json.chatInput}}\\n\\nReplace this placeholder with real retrieval steps for CRM context, website facts, active signals, stakeholders, messaging angles, and next-best actions.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c28efdcb-7ca7-4021-a825-887f765f5dd2",
+      "name": "Set Research Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        820,
+        980
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Account Research Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Research Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d1090a8-b723-4a76-9320-8af92b20caec",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

@@ -1,0 +1,12 @@
+# Bounded specialist roles. Each maps to one skill and the asset kinds it owns.
+# The orchestrator schedules them in DAG waves (lib/pal/compressor.ts).
+subagents:
+  icp-architect:        { skill: skills/icp,                assets: [icp] }
+  persona-architect:    { skill: skills/personas,           assets: [personas] }
+  messaging-architect:  { skill: skills/messaging,          assets: [positioning] }
+  outbound-architect:   { skill: skills/outbound-sequences, assets: [email_sequence, linkedin_dm, call_script] }
+  competitive-architect:{ skill: skills/competitive,        assets: [battlecard, objection_handling] }
+  kpi-architect:        { skill: skills/kpi,                assets: [kpi_scorecard] }
+  playbook-architect:   { skill: skills/playbook,           assets: [gtm_playbook, launch_plan] }
+  prospector:           { skill: skills/prospector,         assets: [prospecting_plan] }
+  automation-engineer:  { skill: skills/n8n-engineer,       assets: [automation_blueprint] }

@@ -1,0 +1,15 @@
+{
+  // Enably GTM durable run agent — Cloudflare Agents on Durable Objects.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "enably-gtm-durable",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [{ "name": "GtmRunAgent", "class_name": "GtmRunAgent" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GtmRunAgent"] }],
+  "observability": { "enabled": true }
+  // Secrets (set with `npx wrangler secret put <NAME>`):
+  //   CF_AGENT_SECRET — same value as the Next.js app's CF_AGENT_SECRET
+}

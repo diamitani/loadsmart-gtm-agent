@@ -1,2 +1,19 @@
+# dependencies
+node_modules/
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+# local data store (dev only)
+.data/
+# env files — never commit secrets
+.env
+.env*.local
+# cloudflare
+.wrangler/
+workers/**/node_modules/
+# python (legacy)
 __pycache__/
 *.pyc
+.DS_Store

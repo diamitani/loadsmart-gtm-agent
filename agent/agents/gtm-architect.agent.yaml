@@ -1,0 +1,39 @@
+apiVersion: rostr.ai/v2
+kind: Agent
+metadata:
+  id: gtm-architect
+  name: Enably GTM Architect
+  version: 1.0.0
+spec:
+  role: Orchestrator. Compiles any GTM request into a verified, complete asset package.
+  instructions: ../instructions/system.md
+  runtime:
+    sdk: vercel-ai-sdk@7
+    entrypoint: lib/agent/pipeline.ts
+    chat: app/api/chat/route.ts
+    durable: workers/gtm-durable (Cloudflare Agents / Durable Objects)
+    observability: langsmith (traceable spans per stage)
+  pipeline: [intake, intent, foundation, instruct, plan, build, test, present]
+  inputs: [chat_messages, questionnaire, files, links, webhook_payload]
+  outputs: [run_manifest, gtm_assets, pop_11_documents, quality_report, next_action]
+  subagents:
+    - icp-architect
+    - persona-architect
+    - messaging-architect
+    - outbound-architect
+    - competitive-architect
+    - kpi-architect
+    - playbook-architect
+    - prospector
+    - automation-engineer
+  tools:
+    - search_knowledge      # RAG-DAL over the workspace knowledge base
+    - list_artifacts        # read the GTM Library
+    - get_artifact
+    - revise_artifact       # writes a new version (human can roll back)
+    - truth_check
+    - send_to_workflow      # n8n / Make / Zapier webhook — needsApproval
+  guardrails:
+    - Do not build below W = 1.00.
+    - Label assumptions; never invent operational data.
+    - Never bypass approval gates.
