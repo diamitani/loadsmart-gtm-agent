@@ -8,7 +8,10 @@ import { billingConfig } from "@/lib/billing/config";
  */
 export function env() {
   const e = process.env;
-  const gatewayKey = e.AI_GATEWAY_API_KEY || e.VERCEL_OIDC_TOKEN;
+  // On Vercel the OIDC token arrives per request (not always in process.env), so opt in explicitly:
+  // ENABLY_AI_GATEWAY_OIDC=1 uses AI Gateway via the project's OIDC token — no pasted key needed.
+  const gatewayOidc = !!e.VERCEL && e.ENABLY_AI_GATEWAY_OIDC === "1";
+  const gatewayKey = e.AI_GATEWAY_API_KEY || e.VERCEL_OIDC_TOKEN || (gatewayOidc ? "oidc" : "");
   const anthropicKey = e.ANTHROPIC_API_KEY;
   const provider: "gateway" | "anthropic" | "demo" = gatewayKey ? "gateway" : anthropicKey ? "anthropic" : "demo";
   return {

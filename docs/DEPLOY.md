@@ -8,7 +8,7 @@ Do these in order. Each step is optional except step 1 — the app works after a
 2. Go to **vercel.com → Add New → Project**, import `enablygtm`. Framework: Next.js (auto-detected). Click **Deploy**.
 3. In the project: **Settings → Environment Variables**. Add at least:
    - `ENABLY_ACCESS_CODE` — any password. **Do this first** so strangers can't use your AI credits.
-   - The AI key: on Vercel, enable **AI Gateway** for the project (the OIDC token is picked up automatically), or add `AI_GATEWAY_API_KEY` / `ANTHROPIC_API_KEY`.
+   - The AI key: on Vercel, use **AI Gateway** through the project's OIDC token by setting `ENABLY_AI_GATEWAY_OIDC=1`, or add `AI_GATEWAY_API_KEY` / `ANTHROPIC_API_KEY`.
 4. Redeploy. Without a database, Vercel keeps data only in memory (it resets) — do step 2 next.
 
 ## 2. Supabase (the database)
