@@ -1,0 +1,309 @@
+@import "tailwindcss";
+@source "../node_modules/streamdown/dist/*.js";
+
+/*
+ * Enably design tokens — warm editorial system.
+ * Paper + ink neutrals, a clay accent for action, evergreen for "verified",
+ * amber for "needs attention". Every color is a token so light/dark swap cleanly.
+ */
+:root {
+  --paper: #faf9f5;
+  --paper-2: #f3f1ea;
+  --surface: #ffffff;
+  --ink: #1f1e1c;
+  --ink-2: #3d3a35;
+  --muted: #6f6b63;
+  --faint: #9a958b;
+  --line: #e6e2d8;
+  --line-strong: #d6d1c4;
+  --clay: #c2562f;
+  --clay-ink: #ffffff;
+  --clay-soft: #f6e6dd;
+  --evergreen: #24594c;
+  --evergreen-soft: #e1eee9;
+  --amber: #a46a12;
+  --amber-soft: #f7ecd6;
+  --rose: #b4363c;
+  --rose-soft: #f8e3e2;
+  --sky: #2e5f8a;
+  --sky-soft: #e2ecf5;
+  --shadow: 0 1px 2px rgb(31 30 28 / 0.04), 0 8px 24px -12px rgb(31 30 28 / 0.12);
+
+  /* streamdown / shadcn-compatible aliases */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --muted-foreground: var(--muted);
+  --border: var(--line);
+  --input: var(--line);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --radius: 0.75rem;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #171614;
+    --paper-2: #1e1d1a;
+    --surface: #22211e;
+    --ink: #eeebe3;
+    --ink-2: #d4d0c6;
+    --muted: #a39e93;
+    --faint: #7a766d;
+    --line: #34322d;
+    --line-strong: #46433c;
+    --clay: #e07a55;
+    --clay-ink: #1a1310;
+    --clay-soft: #3a2519;
+    --evergreen: #6fc3a7;
+    --evergreen-soft: #1c3029;
+    --amber: #e3b05a;
+    --amber-soft: #3a2e17;
+    --rose: #ec8a8e;
+    --rose-soft: #3d2022;
+    --sky: #8ab8e0;
+    --sky-soft: #1d2a37;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -14px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #171614;
+  --paper-2: #1e1d1a;
+  --surface: #22211e;
+  --ink: #eeebe3;
+  --ink-2: #d4d0c6;
+  --muted: #a39e93;
+  --faint: #7a766d;
+  --line: #34322d;
+  --line-strong: #46433c;
+  --clay: #e07a55;
+  --clay-ink: #1a1310;
+  --clay-soft: #3a2519;
+  --evergreen: #6fc3a7;
+  --evergreen-soft: #1c3029;
+  --amber: #e3b05a;
+  --amber-soft: #3a2e17;
+  --rose: #ec8a8e;
+  --rose-soft: #3d2022;
+  --sky: #8ab8e0;
+  --sky-soft: #1d2a37;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -14px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-clay: var(--clay);
+  --color-clay-ink: var(--clay-ink);
+  --color-clay-soft: var(--clay-soft);
+  --color-evergreen: var(--evergreen);
+  --color-evergreen-soft: var(--evergreen-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-border: var(--line);
+  --color-muted-foreground: var(--muted);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-mono-jb), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow-soft: var(--shadow);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--clay-soft);
+  }
+  :focus-visible {
+    outline: 2px solid var(--clay);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@layer components {
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 450;
+    letter-spacing: -0.02em;
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .hairline {
+    border-color: var(--line);
+  }
+  .grain {
+    background-image: radial-gradient(color-mix(in oklab, var(--ink) 6%, transparent) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  /* Rendered markdown (artifacts, chat) */
+  .prose-enably {
+    color: var(--ink-2);
+    line-height: 1.65;
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+  .prose-enably h1 {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--ink);
+    margin: 0.2em 0 0.6em;
+    letter-spacing: -0.01em;
+  }
+  .prose-enably h2 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--ink);
+    margin: 1.4em 0 0.5em;
+  }
+  .prose-enably h3 {
+    font-weight: 600;
+    color: var(--ink);
+    margin: 1.2em 0 0.4em;
+  }
+  .prose-enably p {
+    margin: 0.55em 0;
+  }
+  .prose-enably ul,
+  .prose-enably ol {
+    padding-left: 1.3em;
+    margin: 0.5em 0;
+  }
+  .prose-enably ul {
+    list-style: disc;
+  }
+  .prose-enably ol {
+    list-style: decimal;
+  }
+  .prose-enably li {
+    margin: 0.2em 0;
+  }
+  .prose-enably strong {
+    color: var(--ink);
+  }
+  .prose-enably blockquote {
+    border-left: 3px solid var(--clay);
+    background: var(--paper-2);
+    padding: 0.5em 0.9em;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin: 0.8em 0;
+    color: var(--ink-2);
+  }
+  .prose-enably table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin: 0.8em 0;
+    display: block;
+    overflow-x: auto;
+  }
+  .prose-enably th,
+  .prose-enably td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.45em 0.7em;
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose-enably th {
+    color: var(--ink);
+    font-weight: 600;
+    background: var(--paper-2);
+  }
+  .prose-enably code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    padding: 0.05em 0.35em;
+    border-radius: 0.35rem;
+  }
+  .prose-enably pre code {
+    border: 0;
+    padding: 0;
+    background: none;
+  }
+  .prose-enably pre {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    padding: 0.8em 1em;
+    overflow-x: auto;
+  }
+  .prose-enably a {
+    color: var(--clay);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-enably hr {
+    border-color: var(--line);
+    margin: 1.2em 0;
+  }
+}
+
+@keyframes enably-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse-dot {
+  animation: enably-pulse 1.2s ease-in-out infinite;
+}
+@keyframes enably-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: enably-rise 0.35s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot,
+  .rise {
+    animation: none;
+  }
+}

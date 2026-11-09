@@ -1,0 +1,47 @@
+import "server-only";
+
+/**
+ * Every setting the app reads, in one place. Nothing here is required:
+ * with zero keys the app runs in demo mode (deterministic PAL engine +
+ * template assets + local file store). Add keys to unlock each multiplier.
+ */
+export function env() {
+  const e = process.env;
+  const gatewayKey = e.AI_GATEWAY_API_KEY || e.VERCEL_OIDC_TOKEN;
+  const anthropicKey = e.ANTHROPIC_API_KEY;
+  const provider: "gateway" | "anthropic" | "demo" = gatewayKey ? "gateway" : anthropicKey ? "anthropic" : "demo";
+  return {
+    provider,
+    model: e.ENABLY_MODEL || (provider === "anthropic" ? "claude-sonnet-5-5" : "anthropic/claude-sonnet-5.5"),
+    fastModel: e.ENABLY_FAST_MODEL || (provider === "anthropic" ? "claude-haiku-5-5" : "anthropic/claude-haiku-5.5"),
+    workspaceId: e.ENABLY_WORKSPACE_ID || "default",
+    accessCode: e.ENABLY_ACCESS_CODE || "",
+    supabaseUrl: e.SUPABASE_URL || e.NEXT_PUBLIC_SUPABASE_URL || "",
+    supabaseServiceKey: e.SUPABASE_SERVICE_ROLE_KEY || "",
+    langsmithEnabled: !!e.LANGSMITH_API_KEY && e.LANGSMITH_TRACING !== "false",
+    langsmithProject: e.LANGSMITH_PROJECT || "enablygtm",
+    durableUrl: e.CF_AGENT_URL || "",
+    durableSecret: e.CF_AGENT_SECRET || "",
+    workflowWebhookUrl: e.WORKFLOW_WEBHOOK_URL || e.N8N_WEBHOOK_URL || "",
+    workflowWebhookSecret: e.WORKFLOW_WEBHOOK_SECRET || "",
+    /** Serverless latency watchdog: hand off remaining waves to the durable agent after this. */
+    watchdogMs: Number(e.ENABLY_WATCHDOG_MS || 45000),
+  };
+}
+
+export type Env = ReturnType<typeof env>;
+
+/** Safe, secret-free summary for the Settings page. */
+export function integrationStatus() {
+  const e = env();
+  return [
+    { id: "model", label: "AI model", ok: e.provider !== "demo", detail: e.provider === "demo" ? "Demo mode — template assets, no model calls" : `${e.provider === "gateway" ? "Vercel AI Gateway" : "Anthropic"} · ${e.model}`, env: "AI_GATEWAY_API_KEY or ANTHROPIC_API_KEY" },
+    { id: "db", label: "Database", ok: !!(e.supabaseUrl && e.supabaseServiceKey), detail: e.supabaseUrl ? "Supabase Postgres" : "Local file store (.data/enably.json)", env: "SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY" },
+    { id: "langsmith", label: "LangSmith tracing & evals", ok: e.langsmithEnabled, detail: e.langsmithEnabled ? `Project: ${e.langsmithProject}` : "Off — traces print nowhere", env: "LANGSMITH_API_KEY (+ LANGSMITH_PROJECT)" },
+    { id: "durable", label: "Cloudflare durable agent", ok: !!e.durableUrl, detail: e.durableUrl ? "Long runs + approvals hand off to Durable Objects" : "Off — runs execute inline", env: "CF_AGENT_URL + CF_AGENT_SECRET" },
+    { id: "webhook", label: "Workflow delivery (n8n / Make / Zapier)", ok: !!e.workflowWebhookUrl, detail: e.workflowWebhookUrl ? "Approval-gated webhook configured" : "Off — packages stay in the Library", env: "WORKFLOW_WEBHOOK_URL" },
+    { id: "ingest", label: "Docs, OCR & vision", ok: true, detail: `PDF/Word/PowerPoint/Excel + OCR built in${e.provider !== "demo" ? " · model vision for images & scans" : ""}${process.env.DOCLING_URL ? " · Docling" : ""}`, env: "DOCLING_URL (optional)" },
+    { id: "transcribe", label: "Audio & video transcription", ok: !!process.env.TRANSCRIBE_BASE_URL, detail: process.env.TRANSCRIBE_BASE_URL ? `Whisper · ${process.env.TRANSCRIBE_MODEL || "whisper-large-v3-turbo"}` : "Off — add a free Whisper endpoint", env: "TRANSCRIBE_BASE_URL (+ TRANSCRIBE_API_KEY)" },
+    { id: "access", label: "Access code", ok: !!e.accessCode, detail: e.accessCode ? "App is protected" : "Open — set before deploying publicly", env: "ENABLY_ACCESS_CODE" },
+  ];
+}

@@ -1,0 +1,10 @@
+[
+  { "id": "starter-pack", "input": "We're launching an AI bookkeeping assistant for 10-50 person marketing agencies in the US. Build the full GTM starter pack.", "expect": { "ready": true, "assets": ["icp", "personas", "positioning", "email_sequence", "kpi_scorecard", "gtm_playbook"] } },
+  { "id": "icp-emails-competitors", "input": "Build an ICP, personas and a 4-step cold email sequence for our HR compliance software for multi-location restaurants. We compete with Gusto and Rippling.", "expect": { "ready": true, "assets": ["icp", "personas", "email_sequence"] } },
+  { "id": "signals-automation", "input": "Create a signal-based prospecting plan and an n8n automation blueprint for selling cybersecurity audits to Series A fintech startups.", "expect": { "ready": true, "assets": ["prospecting_plan", "automation_blueprint"] } },
+  { "id": "battlecard", "input": "We sell a scheduling app for dental clinics with 3-10 locations. Build a battlecard vs Dentrix and an objection handling guide.", "expect": { "ready": true, "assets": ["battlecard", "objection_handling"] } },
+  { "id": "underspecified-emails", "input": "Write me some cold emails.", "expect": { "ready": false } },
+  { "id": "underspecified-strategy", "input": "Help me with my go-to-market strategy.", "expect": { "ready": false } },
+  { "id": "launch-plg", "input": "We're building a product-led note-taking app for remote engineering teams at seed-stage startups. Draft a launch plan and KPI scorecard.", "expect": { "ready": true, "assets": ["launch_plan", "kpi_scorecard"] } },
+  { "id": "linkedin-calls", "input": "Our agency offers fractional RevOps for B2B SaaS companies with 20-200 employees, selling to the VP of Sales. I need a LinkedIn DM sequence and a cold call script.", "expect": { "ready": true, "assets": ["linkedin_dm", "call_script"] } }
+]

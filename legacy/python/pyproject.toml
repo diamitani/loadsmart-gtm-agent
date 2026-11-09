@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enablygtm-legacy"
+version = "0.1.0"
+description = "Legacy Python bootstrap for Enably GTM (OpenClaw integration + GTM metrics helpers). Superseded by the TypeScript app at the repo root."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+addopts = "-q"

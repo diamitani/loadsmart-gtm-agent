@@ -1,0 +1,53 @@
+{
+  "name": "enablygtm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Enably GTM Architect — the AI go-to-market architect agent (PAL intake → intent → foundation → instruct → plan → build → test → present).",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "eval": "tsx --conditions=react-server --tsconfig tsconfig.json evals/run.ts",
+    "cf:dev": "npm --prefix workers/gtm-durable run dev",
+    "cf:deploy": "npm --prefix workers/gtm-durable run deploy"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.99",
+    "@ai-sdk/gateway": "^4.0.138",
+    "@ai-sdk/mcp": "^2.0.93",
+    "@ai-sdk/react": "^4.0.169",
+    "@supabase/supabase-js": "^2.119.0",
+    "ai": "^7.0.165",
+    "clsx": "^2.1.1",
+    "fflate": "^0.8.3",
+    "langsmith": "^0.11.8",
+    "lucide-react": "^1.70.0",
+    "mammoth": "^1.13.0",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "streamdown": "^2.7.1",
+    "tailwind-merge": "^3.7.0",
+    "tesseract.js": "^7.0.0",
+    "unpdf": "^2.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "5.9",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "n8n Engineer"
+  short_description: "Build n8n agents, MCP, and GTM systems"
+  default_prompt: "Use $n8n-engineer to design and build an n8n workflow, AI agent, MCP setup, API integration, or GTM automation with production guardrails."
+
+policy:
+  allow_implicit_invocation: true
