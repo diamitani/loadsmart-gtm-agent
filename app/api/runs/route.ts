@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { runPipeline } from "@/lib/agent/pipeline";
 import { getStore } from "@/lib/db";
+import { requestAiContext, withAiContext } from "@/lib/agent/ai-context";
 
 export const maxDuration = 300;
 
@@ -21,7 +22,13 @@ export async function POST(req: Request) {
   if (!parsed.success) return Response.json({ error: parsed.error.flatten() }, { status: 400 });
   const { message, questionnaire, links, files, source } = parsed.data;
   if (!message.trim() && !Object.keys(questionnaire ?? {}).length) return Response.json({ error: "Provide a message or questionnaire" }, { status: 400 });
-  const result = await runPipeline({ messages: message ? [message] : [], questionnaire, links, files, source });
+  // Runs started over HTTP spend the caller's own key or credits (same rules as chat).
+  // Server-to-server automations that send `Authorization: Bearer $ENABLY_MCP_TOKEN` use the house key unmetered.
+  const token = process.env.ENABLY_MCP_TOKEN;
+  const operator = !!token && req.headers.get("authorization") === `Bearer ${token}`;
+  const ai = operator ? null : await requestAiContext();
+  const run = () => runPipeline({ messages: message ? [message] : [], questionnaire, links, files, source });
+  const result = ai ? await withAiContext(ai, run) : await run();
   return Response.json({
     runId: result.run.id,
     status: result.run.status,

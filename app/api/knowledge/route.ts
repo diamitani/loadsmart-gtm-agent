@@ -2,6 +2,7 @@ import { getStore } from "@/lib/db";
 import { env } from "@/lib/env";
 import { newId, nowIso } from "@/lib/utils";
 import { ingestUrl } from "@/lib/agent/fetch-url";
+import { requestAiContext, withAiContext } from "@/lib/agent/ai-context";
 import { ingestFile, IngestError, MAX_UPLOAD_BYTES, type IngestResult } from "@/lib/ingest";
 
 export const maxDuration = 300;
@@ -30,6 +31,12 @@ const LABEL: Record<IngestResult["method"], string> = {
  * pasted text, or any public URL (web page, PDF, image, audio, video — up to 25 MB).
  */
 export async function POST(req: Request) {
+  // Vision extraction uses the caller's own key or credits.
+  const ai = await requestAiContext();
+  return withAiContext(ai, () => addKnowledge(req));
+}
+
+async function addKnowledge(req: Request) {
   const store = getStore();
   const ct = req.headers.get("content-type") ?? "";
   const results: { name: string; kind: "file" | "text" | "url"; source?: string; r: IngestResult }[] = [];

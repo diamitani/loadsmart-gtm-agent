@@ -1,10 +1,11 @@
 import { Architect } from "@/components/chat/architect";
-import { env } from "@/lib/env";
+import { requestAiContext } from "@/lib/agent/ai-context";
 import { newId } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Architect" };
 
-export default function NewConversationPage() {
-  return <Architect key="new" id={newId("c")} initialMessages={[]} demo={env().provider === "demo"} />;
+export default async function NewConversationPage() {
+  const ai = await requestAiContext();
+  return <Architect key="new" id={newId("c")} initialMessages={[]} demo={ai.mode === "none"} noCredits={ai.reason === "no_credits"} />;
 }
