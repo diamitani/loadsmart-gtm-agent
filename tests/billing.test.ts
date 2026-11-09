@@ -2,7 +2,6 @@ import { createHmac, randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { MockLanguageModelV4 } from "ai/test";
 import { open, parseKey, seal } from "@/lib/billing/crypto";
-import { newAccountId, signAccount, verifyAccount, ACCOUNT_ID_RE } from "@/lib/billing/account-cookie";
 import { checkoutForm, creditsFromEvent, verifyStripeSignature } from "@/lib/billing/stripe";
 import { billingConfig, DEFAULT_PACKS, parsePacks } from "@/lib/billing/config";
 import { createLocalBillingStore, getBillingStore } from "@/lib/billing/store";
@@ -10,7 +9,7 @@ import { resolveAiContext } from "@/lib/agent/ai-context";
 import { getModel, meter } from "@/lib/agent/models";
 
 const KEY = randomBytes(32);
-const ENV_KEYS = ["BYOK_ENCRYPTION_KEY", "ENABLY_SESSION_SECRET", "ENABLY_BILLING", "AI_GATEWAY_API_KEY", "ANTHROPIC_API_KEY", "VERCEL_OIDC_TOKEN", "ENABLY_FREE_CREDITS", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "VERCEL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+const ENV_KEYS = ["BYOK_ENCRYPTION_KEY", "ENABLY_SESSION_SECRET", "ENABLY_BILLING", "AI_GATEWAY_API_KEY", "ANTHROPIC_API_KEY", "VERCEL_OIDC_TOKEN", "ENABLY_FREE_CREDITS", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "VERCEL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "VERCEL_ENV"];
 let saved: Record<string, string | undefined> = {};
 beforeEach(() => {
   saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
@@ -34,19 +33,6 @@ describe("BYOK encryption (AES-256-GCM)", () => {
     expect(parseKey(KEY.toString("hex"))?.length).toBe(32);
     expect(parseKey("too-short")).toBeNull();
     expect(parseKey("")).toBeNull();
-  });
-});
-
-describe("signed account cookie", () => {
-  it("verifies its own signature and rejects tampering", async () => {
-    const id = newAccountId();
-    expect(id).toMatch(ACCOUNT_ID_RE);
-    const v = await signAccount(id, "s1");
-    expect(await verifyAccount(v, "s1")).toBe(id);
-    expect(await verifyAccount(v, "s2")).toBeNull();
-    expect(await verifyAccount(`${newAccountId()}.${v.split(".")[1]}`, "s1")).toBeNull();
-    expect(await verifyAccount("garbage", "s1")).toBeNull();
-    expect(await verifyAccount(v, "")).toBeNull();
   });
 });
 
@@ -94,6 +80,9 @@ describe("Stripe", () => {
     expect(billingConfig().stripe).toBe(false);
     process.env.SUPABASE_URL = "https://x.supabase.co";
     process.env.SUPABASE_SERVICE_ROLE_KEY = "k";
+    // Durable store but no sign-in configured: still paused (no accounts to credit).
+    expect(billingConfig().stripe).toBe(false);
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon";
     expect(billingConfig().stripe).toBe(true);
   });
 });
@@ -190,3 +179,8 @@ describe("metered model", () => {
     expect(mock.doGenerateCalls).toHaveLength(3);
   });
 });
+
+/** Billing accounts are keyed by the Supabase auth user id. */
+function newAccountId(): string {
+  return crypto.randomUUID();
+}

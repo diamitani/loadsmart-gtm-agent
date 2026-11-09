@@ -2,6 +2,7 @@ import { z } from "zod";
 import { runPipeline } from "@/lib/agent/pipeline";
 import { getStore } from "@/lib/db";
 import { requestAiContext, withAiContext } from "@/lib/agent/ai-context";
+import { withSystemScope } from "@/lib/auth/scope";
 
 export const maxDuration = 300;
 
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
   const operator = !!token && req.headers.get("authorization") === `Bearer ${token}`;
   const ai = operator ? null : await requestAiContext();
   const run = () => runPipeline({ messages: message ? [message] : [], questionnaire, links, files, source });
-  const result = ai ? await withAiContext(ai, run) : await run();
+  // Operator runs are workspace-level (system scope); everyone else's run is saved to the signed-in user.
+  const result = operator ? await withSystemScope(run) : ai ? await withAiContext(ai, run) : await run();
   return Response.json({
     runId: result.run.id,
     status: result.run.status,

@@ -1,5 +1,5 @@
 import { encryptionKey } from "./crypto";
-import { sessionSecret } from "./account-cookie";
+import { authMode } from "@/lib/auth/config";
 
 export const BYOK_PROVIDERS = ["anthropic", "openai", "gateway"] as const;
 export type ByokProvider = (typeof BYOK_PROVIDERS)[number];
@@ -57,13 +57,13 @@ export function durableBillingStore(): boolean {
 
 export function billingConfig() {
   const e = process.env;
-  const accounts = !!sessionSecret();
+  const accounts = authMode() !== "unconfigured";
   const byok = !!encryptionKey();
   const durable = durableBillingStore();
   return {
-    /** Per-account accounts are available (signing secret present). */
+    /** Signed-in user accounts are available (Supabase Auth, or the dev user locally). */
     accounts,
-    /** House-key usage is metered with credits. Off with ENABLY_BILLING=off, or when accounts are unavailable. */
+    /** House-key usage is metered with credits. Off with ENABLY_BILLING=off. */
     metered: accounts && (e.ENABLY_BILLING || "on").toLowerCase() !== "off",
     /** Users can store their own provider key. */
     byok: accounts && byok,

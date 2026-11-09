@@ -193,6 +193,8 @@ export type ArtifactGroup = "asset" | "pop";
 export interface Artifact {
   id: string;
   runId?: string;
+  /** Owner (Supabase auth user id). */
+  userId?: string | null;
   kind: string;
   group: ArtifactGroup;
   code?: string;
@@ -255,6 +257,8 @@ export interface RunRecord {
   id: string;
   conversationId?: string;
   workspaceId: string;
+  /** Owner (Supabase auth user id). */
+  userId?: string | null;
   status: RunStatus;
   title: string;
   source: Intake["source"];
