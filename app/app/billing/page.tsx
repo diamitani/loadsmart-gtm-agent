@@ -1,13 +1,14 @@
 import { PageHeader } from "@/components/ui";
 import { BillingPanel } from "@/components/billing-panel";
 import { currentAccountId } from "@/lib/billing/account";
+import { currentUser } from "@/lib/auth/user";
 import { billingStatus } from "@/lib/billing/status";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Credits & keys" };
 
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
-  const [{ checkout }, status] = await Promise.all([searchParams, currentAccountId().then(billingStatus)]);
+  const [{ checkout }, status] = await Promise.all([searchParams, Promise.all([currentAccountId(), currentUser()]).then(([id, u]) => billingStatus(id, u?.email ?? null))]);
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
       <PageHeader

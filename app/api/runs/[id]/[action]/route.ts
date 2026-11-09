@@ -1,6 +1,7 @@
 import { continueRun } from "@/lib/agent/pipeline";
 import { verifyDurableCallback } from "@/lib/durable/client";
 import { getStore } from "@/lib/db";
+import { withSystemScope } from "@/lib/auth/scope";
 
 export const maxDuration = 300;
 
@@ -12,6 +13,11 @@ export const maxDuration = 300;
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string; action: string }> }) {
   if (!verifyDurableCallback(req)) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // Trusted callback: acts on the run as the system; new artifacts inherit the run's owner.
+  return withSystemScope(() => handle(req, params));
+}
+
+async function handle(req: Request, params: Promise<{ id: string; action: string }>) {
   const { id, action } = await params;
   const store = getStore();
   const body = await req.json().catch(() => ({}));

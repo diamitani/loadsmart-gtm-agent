@@ -61,6 +61,7 @@ export default function Landing() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <a href="/signin" className="px-2 text-sm text-muted hover:text-ink">Sign in</a>
             <ButtonLink href="/app" size="sm">Open the Architect <ArrowRight className="h-3.5 w-3.5" /></ButtonLink>
           </div>
         </div>

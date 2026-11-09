@@ -3,6 +3,8 @@ import type { Artifact, RunRecord } from "@/lib/pal/types";
 export interface Conversation {
   id: string;
   workspaceId: string;
+  /** Owner (Supabase auth user id). Null for legacy/system rows. */
+  userId?: string | null;
   title: string;
   /** AI SDK UIMessage[] — stored as JSON so the chat restores exactly. */
   messages: unknown[];
@@ -16,6 +18,7 @@ export interface Conversation {
 export interface KnowledgeDoc {
   id: string;
   workspaceId: string;
+  userId?: string | null;
   name: string;
   kind: "file" | "text" | "url";
   source?: string;

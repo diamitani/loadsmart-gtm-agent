@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Artifact, RunRecord } from "@/lib/pal/types";
 import type { Activity, AuditEvent, Conversation, EvalRun, KnowledgeDoc, Store, Suppression } from "./types";
 import { newId, nowIso } from "@/lib/utils";
+import { currentScope, ownerFor, visible } from "@/lib/auth/scope";
 
 /**
  * Local store — zero setup. Keeps everything in memory and, outside
@@ -69,44 +70,67 @@ export function createLocalStore(workspaceId: string): Store {
   return {
     driver: "local",
     async getConversation(id) {
-      return d().conversations[id] ?? null;
+      const sc = await currentScope();
+      const c = d().conversations[id];
+      return c && visible(sc, c.userId) ? c : null;
     },
     async listConversations(limit = 50) {
-      return Object.values(d().conversations).sort(byNewest).slice(0, limit);
+      const sc = await currentScope();
+      return Object.values(d().conversations).filter((c) => visible(sc, c.userId)).sort(byNewest).slice(0, limit);
     },
     async saveConversation(c) {
-      d().conversations[c.id] = c;
+      const sc = await currentScope();
+      const existing = d().conversations[c.id];
+      const userId = ownerFor(sc, c.userId, existing ? (existing.userId ?? null) : undefined);
+      d().conversations[c.id] = { ...c, userId };
       persist();
     },
     async deleteConversation(id) {
-      delete d().conversations[id];
+      const sc = await currentScope();
+      const c = d().conversations[id];
+      if (c && visible(sc, c.userId)) delete d().conversations[id];
       persist();
     },
     async saveRun(r) {
+      const sc = await currentScope();
+      const existing = d().runs[r.id];
+      r.userId = ownerFor(sc, r.userId, existing ? (existing.userId ?? null) : undefined);
       d().runs[r.id] = r;
       persist();
     },
     async getRun(id) {
-      return d().runs[id] ?? null;
+      const sc = await currentScope();
+      const r = d().runs[id];
+      return r && visible(sc, r.userId) ? r : null;
     },
     async listRuns(limit = 50) {
-      return Object.values(d().runs).sort(byNewest).slice(0, limit);
+      const sc = await currentScope();
+      return Object.values(d().runs).filter((r) => visible(sc, r.userId)).sort(byNewest).slice(0, limit);
     },
     async saveArtifacts(list) {
-      for (const a of list) d().artifacts[a.id] = a;
+      const sc = await currentScope();
+      for (const a of list) {
+        const existing = d().artifacts[a.id];
+        const runOwner = a.runId ? d().runs[a.runId]?.userId : undefined;
+        a.userId = ownerFor(sc, a.userId ?? runOwner, existing ? (existing.userId ?? null) : undefined);
+        d().artifacts[a.id] = a;
+      }
       persist();
     },
     async getArtifact(id) {
-      return d().artifacts[id] ?? null;
+      const sc = await currentScope();
+      const a = d().artifacts[id];
+      return a && visible(sc, a.userId) ? a : null;
     },
     async listArtifacts(filter = {}) {
+      const sc = await currentScope();
       return Object.values(d().artifacts)
-        .filter((a) => (!filter.runId || a.runId === filter.runId) && (!filter.group || a.group === filter.group))
+        .filter((a) => visible(sc, a.userId) && (!filter.runId || a.runId === filter.runId) && (!filter.group || a.group === filter.group))
         .sort(byNewest)
         .slice(0, filter.limit ?? 500);
     },
     async updateArtifact(id, patch) {
-      const a = d().artifacts[id];
+      const a = await this.getArtifact(id);
       if (!a) return null;
       const next = { ...a, ...patch, version: patch.markdown ? a.version + 1 : a.version };
       d().artifacts[id] = next;
@@ -114,14 +138,19 @@ export function createLocalStore(workspaceId: string): Store {
       return next;
     },
     async addKnowledge(k) {
-      d().knowledge[k.id] = k;
+      const sc = await currentScope();
+      const existing = d().knowledge[k.id];
+      d().knowledge[k.id] = { ...k, userId: ownerFor(sc, k.userId, existing ? (existing.userId ?? null) : undefined) };
       persist();
     },
     async listKnowledge() {
-      return Object.values(d().knowledge).sort(byNewest);
+      const sc = await currentScope();
+      return Object.values(d().knowledge).filter((k) => visible(sc, k.userId)).sort(byNewest);
     },
     async deleteKnowledge(id) {
-      delete d().knowledge[id];
+      const sc = await currentScope();
+      const k = d().knowledge[id];
+      if (k && visible(sc, k.userId)) delete d().knowledge[id];
       persist();
     },
     async saveEval(e) {

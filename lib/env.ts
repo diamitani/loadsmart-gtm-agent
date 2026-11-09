@@ -1,5 +1,6 @@
 import "server-only";
 import { billingConfig } from "@/lib/billing/config";
+import { authMode } from "@/lib/auth/config";
 
 /**
  * Every setting the app reads, in one place. Nothing here is required:
@@ -47,7 +48,8 @@ export function integrationStatus() {
     { id: "ingest", label: "Docs, OCR & vision", ok: true, detail: `PDF/Word/PowerPoint/Excel + OCR built in${e.provider !== "demo" ? " · model vision for images & scans" : ""}${process.env.DOCLING_URL ? " · Docling" : ""}`, env: "DOCLING_URL (optional)" },
     { id: "transcribe", label: "Audio & video transcription", ok: !!process.env.TRANSCRIBE_BASE_URL, detail: process.env.TRANSCRIBE_BASE_URL ? `Whisper · ${process.env.TRANSCRIBE_MODEL || "whisper-large-v3-turbo"}` : "Off — add a free Whisper endpoint", env: "TRANSCRIBE_BASE_URL (+ TRANSCRIBE_API_KEY)" },
     ...billingStatusItems(),
-    { id: "access", label: "Access code", ok: !!e.accessCode, detail: e.accessCode ? "App is protected" : "Open — set before deploying publicly", env: "ENABLY_ACCESS_CODE" },
+    authStatusItem(),
+    { id: "access", label: "Extra access code (optional)", ok: true, detail: e.accessCode ? "On — signed-in users must also enter the access code" : "Off — sign-in alone protects the app", env: "ENABLY_ACCESS_CODE" },
   ];
 }
 
@@ -55,7 +57,18 @@ function billingStatusItems() {
   const b = billingConfig();
   return [
     { id: "byok", label: "Bring your own key", ok: b.byok, detail: b.byok ? "Users can add their own Anthropic, OpenAI or AI Gateway key (AES-256-GCM at rest)" : "Off — set a 32-byte BYOK_ENCRYPTION_KEY", env: "BYOK_ENCRYPTION_KEY" },
-    { id: "credits", label: "Credits metering", ok: b.metered, detail: b.metered ? `On · ${b.creditsPerCall} credit(s) per AI call${b.freeCredits ? ` · ${b.freeCredits} free on signup` : ""}` : b.accounts ? "Off (ENABLY_BILLING=off) — house key is free for everyone with access" : "Off — needs BYOK_ENCRYPTION_KEY (or ENABLY_SESSION_SECRET) for accounts", env: "ENABLY_BILLING, ENABLY_CREDITS_PER_CALL, ENABLY_FREE_CREDITS" },
+    { id: "credits", label: "Credits metering", ok: b.metered, detail: b.metered ? `On · ${b.creditsPerCall} credit(s) per AI call${b.freeCredits ? ` · ${b.freeCredits} free on signup` : ""}` : b.accounts ? "Off (ENABLY_BILLING=off) — house key is free for everyone with access" : "Off — needs sign-in (Supabase Auth) for user accounts", env: "ENABLY_BILLING, ENABLY_CREDITS_PER_CALL, ENABLY_FREE_CREDITS" },
     { id: "stripe", label: "Credit purchases (Stripe)", ok: b.stripe, detail: b.stripe ? "Checkout + verified webhook at /api/billing/webhook" : b.stripeKeysPresent ? "Keys set, but paused until Supabase is connected (credits must be durable)" : "Off — add Stripe keys", env: "STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET" },
   ];
+}
+
+function authStatusItem() {
+  const m = authMode();
+  return {
+    id: "auth",
+    label: "Sign-in (Supabase Auth)",
+    ok: m === "supabase",
+    detail: m === "supabase" ? "Google OAuth + email/password · each user's data is private" : m === "dev" ? "Dev mode — everyone is the local dev user (never on Vercel)" : "Not configured — the app is closed until Supabase is connected",
+    env: "NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  };
 }

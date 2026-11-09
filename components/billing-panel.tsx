@@ -17,7 +17,6 @@ export function BillingPanel({ initial, checkout }: { initial: BillingStatus; ch
   const [msg, setMsg] = useState<{ tone: "ok" | "err"; text: string } | null>(
     checkout === "success" ? { tone: "ok", text: "Payment received — your credits appear here within a few seconds. Refresh if they haven't yet." } : checkout === "cancelled" ? { tone: "err", text: "Checkout cancelled — you weren't charged." } : null,
   );
-  const [restore, setRestore] = useState("");
 
   const refresh = async () => {
     const r = await fetch("/api/billing", { cache: "no-store" });
@@ -147,21 +146,12 @@ export function BillingPanel({ initial, checkout }: { initial: BillingStatus; ch
 
       <section className="grid gap-3 md:grid-cols-2">
         <Card className="p-5">
-          <div className="text-sm font-medium text-ink">Recovery code</div>
-          <p className="mt-1 text-xs text-muted">Your credits and key belong to this browser. Save this code to restore them on another device — treat it like a password.</p>
-          {s.accountId ? <code className="mt-3 block break-all rounded-lg bg-paper-2 px-3 py-2 font-mono text-xs text-ink">{s.accountId}</code> : <p className="mt-3 text-xs text-faint">Accounts are not enabled on this server.</p>}
-          {s.accountId && (
-            <form
-              className="mt-3 flex gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void call("restore", () => fetch("/api/account/restore", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accountId: restore.trim() }) }), "Account restored on this browser.").then(() => setRestore(""));
-              }}
-            >
-              <input value={restore} onChange={(e) => setRestore(e.target.value)} placeholder="Paste a recovery code" className="min-w-0 flex-1 rounded-lg border hairline bg-paper px-3 py-1.5 font-mono text-xs outline-none focus:border-clay" />
-              <Button size="sm" variant="ghost" type="submit" disabled={!!busy || !restore.trim()}>Restore</Button>
-            </form>
-          )}
+          <div className="text-sm font-medium text-ink">Account</div>
+          <p className="mt-1 text-xs text-muted">Credits and your key belong to your sign-in, on every device.</p>
+          <div className="mt-3 text-sm text-ink">{s.signedInAs ?? "Signed in"}</div>
+          <form action="/auth/signout" method="post" className="mt-3">
+            <Button size="sm" variant="ghost" type="submit">Sign out</Button>
+          </form>
         </Card>
         <Card className="p-5">
           <div className="text-sm font-medium text-ink">Recent activity</div>

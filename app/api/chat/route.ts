@@ -15,6 +15,8 @@ import { skillText } from "@/lib/agent/skills";
 import { nowIso } from "@/lib/utils";
 import { presentationMarkdown } from "@/lib/agent/present";
 import { requestAiContext, withAiContext, type AiContext } from "@/lib/agent/ai-context";
+import { currentUser } from "@/lib/auth/user";
+import { withUserScope } from "@/lib/auth/scope";
 
 export const maxDuration = 300;
 
@@ -28,6 +30,12 @@ export const maxDuration = 300;
  *               truth-check, approval-gated workflow delivery).
  */
 export async function POST(req: Request) {
+  const user = await currentUser();
+  if (!user) return Response.json({ error: "sign in required" }, { status: 401 });
+  return withUserScope(user.id, () => chat(req, user.id));
+}
+
+async function chat(req: Request, userId: string) {
   const body = (await req.json()) as { id: string; messages: EnablyUIMessage[] };
   const conversationId = body.id;
   const messages = body.messages ?? [];
@@ -45,7 +53,7 @@ export async function POST(req: Request) {
 
   const stream = createUIMessageStream<EnablyUIMessage>({
     originalMessages: messages,
-    execute: ({ writer }) => withAiContext(ai, async () => {
+    execute: ({ writer }) => withUserScope(userId, () => withAiContext(ai, async () => {
       if (mode === "build") {
         const turns = lastRun?.status === "needs_input" && pending.length ? [...pending, latest] : [latest];
         const card = (r: RunRecord): RunCard => ({
@@ -137,17 +145,18 @@ export async function POST(req: Request) {
         telemetry: { functionId: "enably.chat" },
       });
       writer.merge(result.toUIMessageStream({ sendStart: false }));
-    }),
+    })),
     onError: (err) => {
       console.error("[enably] chat error", err);
       return err instanceof Error ? err.message : "Something went wrong";
     },
-    onEnd: async ({ messages: finalMessages }) => {
+    onEnd: async ({ messages: finalMessages }) => withUserScope(userId, async () => {
       await closeMcp?.();
       const firstUser = textOf(finalMessages.find((m) => m.role === "user"));
       await store.saveConversation({
         id: conversationId,
         workspaceId: existing?.workspaceId ?? "default",
+        userId,
         title: existing?.title ?? (firstUser.slice(0, 70) || "New conversation"),
         messages: finalMessages,
         lastRunId: runId,
@@ -155,7 +164,7 @@ export async function POST(req: Request) {
         createdAt: existing?.createdAt ?? nowIso(),
         updatedAt: nowIso(),
       });
-    },
+    }),
   });
 
   return createUIMessageStreamResponse({ stream, headers: { "x-enably-mode": mode, "x-enably-model": modelLabel(ai), "x-enably-billing": ai.mode } });
