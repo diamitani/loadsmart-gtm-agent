@@ -1,4 +1,5 @@
 import { currentAccountId, ensureAccount } from "@/lib/billing/account";
+import { currentUser } from "@/lib/auth/user";
 import { billingConfig } from "@/lib/billing/config";
 import { createCheckoutSession } from "@/lib/billing/stripe";
 
@@ -11,10 +12,11 @@ export async function POST(req: Request) {
   const { packId } = (await req.json().catch(() => ({}))) as { packId?: string };
   const pack = cfg.packs.find((p) => p.id === packId);
   if (!pack) return Response.json({ error: "Unknown credit pack" }, { status: 400 });
-  await ensureAccount(accountId);
+  const user = await currentUser();
+  await ensureAccount(accountId, user?.email);
   const origin = (process.env.ENABLY_APP_URL || new URL(req.url).origin).replace(/\/$/, "");
   try {
-    const session = await createCheckoutSession(pack, accountId, origin);
+    const session = await createCheckoutSession(pack, accountId, origin, user?.email);
     return Response.json({ url: session.url });
   } catch (err) {
     console.error("[enably] checkout failed:", (err as Error).message);

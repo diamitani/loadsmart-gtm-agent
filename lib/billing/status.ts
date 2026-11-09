@@ -5,11 +5,11 @@ import { ensureAccount } from "./account";
 import { env } from "@/lib/env";
 
 /** Everything the Credits & keys page shows. Never includes key material. */
-export async function billingStatus(accountId: string | null) {
+export async function billingStatus(accountId: string | null, email: string | null = null) {
   const cfg = billingConfig();
   const house = env().provider;
   const base = {
-    accountId,
+    signedInAs: email,
     accounts: cfg.accounts,
     metered: cfg.metered,
     byokEnabled: cfg.byok,
@@ -23,7 +23,7 @@ export async function billingStatus(accountId: string | null) {
   };
   if (!accountId) return { ...base, balance: 0, key: null, ledger: [] };
   const store = getBillingStore();
-  await ensureAccount(accountId);
+  await ensureAccount(accountId, email);
   const [balance, key, ledger] = await Promise.all([store.balance(accountId), cfg.byok ? store.getKey(accountId) : null, store.ledger(accountId, 25)]);
   return {
     ...base,

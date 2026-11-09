@@ -19,7 +19,7 @@ const NAV = [
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ conversations, mode }: { conversations: { id: string; title: string }[]; mode: string }) {
+export function Sidebar({ conversations, mode, user = null }: { conversations: { id: string; title: string }[]; mode: string; user?: string | null }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const active = (href: string, exact?: boolean) => (exact ? path === href || path.startsWith("/app/c/") : path.startsWith(href));
@@ -61,6 +61,12 @@ export function Sidebar({ conversations, mode }: { conversations: { id: string; 
           </Link>
         ))}
       </div>
+      {user && (
+        <form action="/auth/signout" method="post" className="flex items-center justify-between gap-2 border-t hairline px-5 py-2.5 text-[11px] text-muted">
+          <span className="truncate" title={user}>{user}</span>
+          <button type="submit" className="shrink-0 hover:text-ink">Sign out</button>
+        </form>
+      )}
       <div className="border-t hairline px-5 py-3 text-[11px] text-faint">
         <span className={cn("mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle", mode === "demo" || mode === "no_credits" ? "bg-amber" : "bg-evergreen")} />
         {mode === "demo" ? (

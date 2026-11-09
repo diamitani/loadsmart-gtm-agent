@@ -10,7 +10,7 @@ import type { CreditPack } from "./config";
 
 const API = "https://api.stripe.com/v1";
 
-export function checkoutForm(pack: CreditPack, accountId: string, origin: string): URLSearchParams {
+export function checkoutForm(pack: CreditPack, accountId: string, origin: string, email?: string | null): URLSearchParams {
   const f = new URLSearchParams();
   f.set("mode", "payment");
   f.set("success_url", `${origin}/app/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
@@ -19,6 +19,7 @@ export function checkoutForm(pack: CreditPack, accountId: string, origin: string
   f.set("metadata[account_id]", accountId);
   f.set("metadata[pack_id]", pack.id);
   f.set("metadata[credits]", String(pack.credits));
+  if (email) f.set("customer_email", email);
   f.set("line_items[0][quantity]", "1");
   if (pack.priceId) {
     f.set("line_items[0][price]", pack.priceId);
@@ -30,13 +31,13 @@ export function checkoutForm(pack: CreditPack, accountId: string, origin: string
   return f;
 }
 
-export async function createCheckoutSession(pack: CreditPack, accountId: string, origin: string): Promise<{ id: string; url: string }> {
+export async function createCheckoutSession(pack: CreditPack, accountId: string, origin: string, email?: string | null): Promise<{ id: string; url: string }> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("Stripe is not configured");
   const res = await fetch(`${API}/checkout/sessions`, {
     method: "POST",
     headers: { authorization: `Bearer ${key}`, "content-type": "application/x-www-form-urlencoded" },
-    body: checkoutForm(pack, accountId, origin),
+    body: checkoutForm(pack, accountId, origin, email),
   });
   const json = (await res.json().catch(() => ({}))) as { id?: string; url?: string; error?: { message?: string } };
   if (!res.ok || !json.url || !json.id) throw new Error(`Stripe: ${json.error?.message ?? `HTTP ${res.status}`}`);

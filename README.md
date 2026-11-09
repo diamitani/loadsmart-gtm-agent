@@ -37,11 +37,11 @@ That's it. With no keys the app runs in **demo mode**: the full 8-stage pipeline
 | Add this | You get |
 |---|---|
 | `AI_GATEWAY_API_KEY` (or `ANTHROPIC_API_KEY`) | Fully written, personalised assets + chat revisions with tools |
-| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | Real Postgres database (run `supabase/migrations/0001_enably_gtm.sql` first) |
+| `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` | Sign-up / sign-in (Google + email) with private per-user data, and a real Postgres database (run `supabase/migrations/0001…0005`). **Required on Vercel** — see [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 | `LANGSMITH_API_KEY` | Every run traced stage-by-stage in LangSmith + eval experiments |
 | `CF_AGENT_URL` + `CF_AGENT_SECRET` | Long builds & approvals survive timeouts via a Cloudflare durable agent |
 | `WORKFLOW_WEBHOOK_URL` | "Send to workflow" delivers approved packages to n8n / Make / Zapier |
-| `ENABLY_ACCESS_CODE` | Password-protects the app (set this before deploying publicly) |
+| `ENABLY_ACCESS_CODE` | Optional invite code required in addition to sign-in |
 | `SERPAPI_API_KEY`, `APOLLO_API_KEY`, `HUNTER_API_KEY`, `HUBSPOT_ACCESS_TOKEN`, `RESEND_API_KEY` | SDR tools: research, prospecting, verification, CRM, email — see [`docs/CONNECTORS.md`](docs/CONNECTORS.md) |
 | `DOCLING_URL`, `TRANSCRIBE_BASE_URL` | Scanned PDFs/tables via self-hosted Docling; audio & video transcripts via Whisper — both free to self-host ([`docs/MULTIMODAL.md`](docs/MULTIMODAL.md)) |
 | `ENABLY_MCP_SERVERS` | Plug in Clay, Zoho, HubSpot, Attio or your n8n via MCP |

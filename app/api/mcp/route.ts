@@ -6,6 +6,7 @@ import { ACTIVITY_TYPES } from "@/lib/db/types";
 import { summarizeActivities } from "@/lib/connectors/sdr-tools";
 import { newId, nowIso } from "@/lib/utils";
 import { env } from "@/lib/env";
+import { withSystemScope } from "@/lib/auth/scope";
 
 export const maxDuration = 300;
 
@@ -83,6 +84,11 @@ export async function POST(req: Request) {
   const token = process.env.ENABLY_MCP_TOKEN;
   if (!token) return Response.json({ error: "MCP endpoint disabled — set ENABLY_MCP_TOKEN" }, { status: 404 });
   if (req.headers.get("authorization") !== `Bearer ${token}`) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // The MCP token is the workspace operator: it sees and writes workspace-level (owner-less) data.
+  return withSystemScope(() => handle(req));
+}
+
+async function handle(req: Request) {
 
   const msg = (await req.json().catch(() => null)) as { jsonrpc?: string; id?: string | number; method?: string; params?: Record<string, unknown> } | null;
   if (!msg?.method) return rpcError(null, -32700, "Parse error");

@@ -35,7 +35,7 @@ export interface StoredKey extends Sealed {
 
 export interface BillingStore {
   readonly driver: "local" | "supabase";
-  ensureAccount(id: string): Promise<{ created: boolean }>;
+  ensureAccount(id: string, email?: string | null): Promise<{ created: boolean }>;
   accountExists(id: string): Promise<boolean>;
   balance(id: string): Promise<number>;
   /** Adds credits once per ref. Returns the balance and whether this call applied it. */
@@ -148,8 +148,8 @@ export function createSupabaseBillingStore(url: string, serviceKey: string, work
   };
   return {
     driver: "supabase",
-    async ensureAccount(id) {
-      const rows = must(await db.from("billing_accounts").upsert({ id, workspace_id: workspaceId }, { onConflict: "id", ignoreDuplicates: true }).select("id"));
+    async ensureAccount(id, email) {
+      const rows = must(await db.from("billing_accounts").upsert({ id, workspace_id: workspaceId, email: email ?? null }, { onConflict: "id", ignoreDuplicates: true }).select("id"));
       return { created: Array.isArray(rows) && rows.length > 0 };
     },
     async accountExists(id) {
