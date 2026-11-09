@@ -6,10 +6,22 @@
       "framework": "nextjs"
     }
   },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": { "service": "app" }
+  "environmentVariables": {
+    "SUPABASE_URL": {
+      "fromSecret": "SUPABASE_URL"
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "fromSecret": "SUPABASE_SERVICE_ROLE_KEY"
+    },
+    "ENABLY_WORKSPACE_ID": {
+      "value": "default"
+    },
+    "NODE_ENV": {
+      "value": "production"
     }
-  ]
+  },
+  "env": {
+    "SUPABASE_URL": "",
+    "SUPABASE_SERVICE_ROLE_KEY": ""
+  }
 }
