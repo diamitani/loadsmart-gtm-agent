@@ -14,6 +14,7 @@ import { quickAction } from "@/lib/agent/quick-actions";
 import { skillText } from "@/lib/agent/skills";
 import { nowIso } from "@/lib/utils";
 import { presentationMarkdown } from "@/lib/agent/present";
+import { requestAiContext, withAiContext, type AiContext } from "@/lib/agent/ai-context";
 
 export const maxDuration = 300;
 
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
   const conversationId = body.id;
   const messages = body.messages ?? [];
   const store = getStore();
+  const ai = await requestAiContext();
 
   const existing = await store.getConversation(conversationId);
   const lastRun = existing?.lastRunId ? await store.getRun(existing.lastRunId) : null;
@@ -43,7 +45,7 @@ export async function POST(req: Request) {
 
   const stream = createUIMessageStream<EnablyUIMessage>({
     originalMessages: messages,
-    execute: async ({ writer }) => {
+    execute: ({ writer }) => withAiContext(ai, async () => {
       if (mode === "build") {
         const turns = lastRun?.status === "needs_input" && pending.length ? [...pending, latest] : [latest];
         const card = (r: RunRecord): RunCard => ({
@@ -85,7 +87,7 @@ export async function POST(req: Request) {
         const model = getModel("main");
         const fallback = presentationMarkdown(run, artifacts);
         if (!model || run.status !== "completed") {
-          writeText(writer, fallback);
+          writeText(writer, ai.reason === "no_credits" && run.status === "completed" ? `${fallback}\n\n${OUT_OF_CREDITS_BUILD}` : fallback);
           return;
         }
         const result = streamText({
@@ -104,6 +106,10 @@ export async function POST(req: Request) {
         const quick = await quickAction(latest);
         if (quick) {
           writeText(writer, quick);
+          return;
+        }
+        if (ai.reason === "no_credits") {
+          writeText(writer, outOfCredits(ai));
           return;
         }
         writeText(
@@ -131,7 +137,7 @@ export async function POST(req: Request) {
         telemetry: { functionId: "enably.chat" },
       });
       writer.merge(result.toUIMessageStream({ sendStart: false }));
-    },
+    }),
     onError: (err) => {
       console.error("[enably] chat error", err);
       return err instanceof Error ? err.message : "Something went wrong";
@@ -152,7 +158,13 @@ export async function POST(req: Request) {
     },
   });
 
-  return createUIMessageStreamResponse({ stream, headers: { "x-enably-mode": mode, "x-enably-model": modelLabel() } });
+  return createUIMessageStreamResponse({ stream, headers: { "x-enably-mode": mode, "x-enably-model": modelLabel(ai), "x-enably-billing": ai.mode } });
+}
+
+const OUT_OF_CREDITS_BUILD = "> **You're out of credits**, so this package was built from structured templates. [Buy credits or add your own AI key](/app/billing) for fully written, personalised assets.";
+
+function outOfCredits(ai: AiContext): string {
+  return `**You're out of credits** (balance: ${ai.balance}; each AI call uses ${ai.creditsPerCall}).\n\n- [Buy a credit pack](/app/billing), or\n- [Add your own Anthropic, OpenAI or AI Gateway key](/app/billing) — your key, your bill, no credits used.\n\nYou can still start a new build: packages are produced from templates without credits.`;
 }
 
 function textOf(m?: EnablyUIMessage): string {

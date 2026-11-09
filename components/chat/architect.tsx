@@ -34,7 +34,7 @@ const STARTERS = [
   },
 ];
 
-export function Architect({ id, initialMessages, demo }: { id: string; initialMessages: EnablyUIMessage[]; demo: boolean }) {
+export function Architect({ id, initialMessages, demo, noCredits = false }: { id: string; initialMessages: EnablyUIMessage[]; demo: boolean; noCredits?: boolean }) {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export function Architect({ id, initialMessages, demo }: { id: string; initialMe
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-8 sm:px-6">
             {messages.length === 0 ? (
-              <Welcome demo={demo} onPick={send} />
+              <Welcome demo={demo} noCredits={noCredits} onPick={send} />
             ) : (
               <div className="space-y-8">
                 {messages.map((m) => (m.role === "user" ? <UserTurn key={m.id} m={m} /> : <AssistantTurn key={m.id} m={m} busy={busy && m.id === messages.at(-1)?.id} onApprove={addToolApprovalResponse} />))}
@@ -152,7 +152,7 @@ function latestStages(messages: EnablyUIMessage[]): StageEvent[] {
   return last ? (last.parts.filter((p) => p.type === "data-stage").map((p) => p.data) as StageEvent[]) : [];
 }
 
-function Welcome({ demo, onPick }: { demo: boolean; onPick: (t: string) => void }) {
+function Welcome({ demo, noCredits, onPick }: { demo: boolean; noCredits: boolean; onPick: (t: string) => void }) {
   return (
     <div className="rise pt-6 sm:pt-12">
       <div className="eyebrow">GTM Architect</div>
@@ -166,7 +166,15 @@ function Welcome({ demo, onPick }: { demo: boolean; onPick: (t: string) => void 
         <div className="mt-5 flex items-start gap-2 rounded-xl border border-amber/30 bg-amber-soft px-4 py-3 text-[13px] text-amber">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            <b>Demo mode.</b> The full pipeline runs, and assets come from structured templates. Add an AI key in <Link href="/app/settings" className="underline">Settings</Link> for fully written, personalised assets.
+            {noCredits ? (
+              <>
+                <b>You&apos;re out of credits.</b> Builds still run from structured templates. <Link href="/app/billing" className="underline">Buy credits or add your own AI key</Link> for fully written, personalised assets.
+              </>
+            ) : (
+              <>
+                <b>Demo mode.</b> The full pipeline runs, and assets come from structured templates. <Link href="/app/billing" className="underline">Add your own AI key</Link> (or set a server key in <Link href="/app/settings" className="underline">Settings</Link>) for fully written, personalised assets.
+              </>
+            )}
           </span>
         </div>
       )}

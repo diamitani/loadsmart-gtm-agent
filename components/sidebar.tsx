@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Activity, BookOpen, Boxes, FlaskConical, Library, Menu, MessageSquarePlus, Settings, Workflow, X } from "lucide-react";
+import { Activity, BookOpen, Boxes, Coins, FlaskConical, Library, Menu, MessageSquarePlus, Settings, Workflow, X } from "lucide-react";
 import { Logo } from "./brand";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/app/knowledge", label: "Knowledge", icon: BookOpen },
   { href: "/app/agents", label: "Agents & Skills", icon: Boxes },
   { href: "/app/evals", label: "Evals", icon: FlaskConical },
+  { href: "/app/billing", label: "Credits & keys", icon: Coins },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
@@ -61,8 +62,14 @@ export function Sidebar({ conversations, mode }: { conversations: { id: string; 
         ))}
       </div>
       <div className="border-t hairline px-5 py-3 text-[11px] text-faint">
-        <span className={cn("mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle", mode === "demo" ? "bg-amber" : "bg-evergreen")} />
-        {mode === "demo" ? "Demo mode · add a model key in Settings" : `Model: ${mode}`}
+        <span className={cn("mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle", mode === "demo" || mode === "no_credits" ? "bg-amber" : "bg-evergreen")} />
+        {mode === "demo" ? (
+          <Link href="/app/billing" className="hover:text-ink">Demo mode · add your AI key</Link>
+        ) : mode === "no_credits" ? (
+          <Link href="/app/billing" className="hover:text-ink">Out of credits · buy or add a key</Link>
+        ) : (
+          `Model: ${mode}`
+        )}
       </div>
     </div>
   );

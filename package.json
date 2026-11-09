@@ -22,6 +22,7 @@
     "@ai-sdk/anthropic": "^4.0.99",
     "@ai-sdk/gateway": "^4.0.138",
     "@ai-sdk/mcp": "^2.0.93",
+    "@ai-sdk/openai": "^4.0.111",
     "@ai-sdk/react": "^4.0.169",
     "@supabase/supabase-js": "^2.119.0",
     "ai": "^7.0.165",
