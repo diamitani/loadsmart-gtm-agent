@@ -17,8 +17,10 @@ export function env() {
   const provider: "gateway" | "anthropic" | "demo" = gatewayKey ? "gateway" : anthropicKey ? "anthropic" : "demo";
   return {
     provider,
-    model: e.ENABLY_MODEL || (provider === "anthropic" ? "claude-sonnet-5-5" : "anthropic/claude-sonnet-5.5"),
-    fastModel: e.ENABLY_FAST_MODEL || (provider === "anthropic" ? "claude-haiku-5-5" : "anthropic/claude-haiku-5.5"),
+    // Gateway defaults are free-tier models verified for text + tool calling + structured output
+    // (GET /api/health?probe=agent). Set ENABLY_MODEL=anthropic/claude-sonnet-5.5 once Gateway credits are added.
+    model: e.ENABLY_MODEL || (provider === "anthropic" ? "claude-sonnet-5-5" : "nvidia/nemotron-3-ultra-550b-a55b"),
+    fastModel: e.ENABLY_FAST_MODEL || (provider === "anthropic" ? "claude-haiku-5-5" : "meta/llama-4-scout"),
     workspaceId: e.ENABLY_WORKSPACE_ID || "default",
     accessCode: e.ENABLY_ACCESS_CODE || "",
     supabaseUrl: e.SUPABASE_URL || e.NEXT_PUBLIC_SUPABASE_URL || "",

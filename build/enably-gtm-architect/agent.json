@@ -142,7 +142,7 @@
     },
     "standard": {
       "provider": "gateway",
-      "model": "anthropic/claude-sonnet-5.5"
+      "model": "nvidia/nemotron-3-ultra-550b-a55b"
     },
     "premium": {
       "provider": "gateway",
@@ -245,7 +245,7 @@
     "removed_tools": []
   },
   "build": {
-    "sourceHash": "73a3252bf0990422",
+    "sourceHash": "4c5d3894f6134816",
     "generator": "forge@1"
   }
 }
