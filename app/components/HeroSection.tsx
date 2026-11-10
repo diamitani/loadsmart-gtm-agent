@@ -1,6 +1,5 @@
-import Image from 'next/image';
-import { FaCheckCircle, FaShieldCheck, FaChartLine, FaDownload } from 'react-icons/fa';
-import { CgSettings, CgInfo } from 'react-icons/cg';
+import type { ReactNode } from 'react';
+import { ChartLine, CircleCheck, Download, ShieldCheck } from 'lucide-react';
 
 export default function Hero() {
   return (
@@ -79,22 +78,22 @@ export function FeatureCards() {
   return (
     <section className="cards">
       <Card
-        icon={<FaChartLine />}
+        icon={<ChartLine />}
         title="Signal-Based Outbound"
         description="Intent signals become enriched, ICP-fit accounts, deduped against your CRM, with PAS drafts waiting for approval."
       />
       <Card
-        icon={<FaShieldCheck />}
+        icon={<ShieldCheck />}
         title="Inbound Automation"
         description="Form and chat leads verified, scored against your ICP and sent to the right rep in Slack, with the CRM updated."
       />
       <Card
-        icon={<FaCheckCircle />}
+        icon={<CircleCheck />}
         title="Pre-Call Research"
         description="External meetings trigger company research and a one-screen brief in the rep's Slack 15 minutes before the call."
       />
       <Card
-        icon={<FaDownload />}
+        icon={<Download />}
         title="CRM Hygiene"
         description="Daily automated cleanup, contact enrichment, and deal health scoring so your data stays fresh."
       />
@@ -102,7 +101,7 @@ export function FeatureCards() {
   );
 }
 
-function Card({icon, title, description}) {
+function Card({ icon, title, description }: { icon: ReactNode; title: string; description: string }) {
   return (
     <article className="card">
       <div className="icon-tile">
