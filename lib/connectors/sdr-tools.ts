@@ -1,5 +1,5 @@
 import "server-only";
-import { tool } from "ai";
+import { generateText, Output, tool } from "ai";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { getStore } from "@/lib/db";
@@ -8,6 +8,7 @@ import { trace } from "@/lib/observability/langsmith";
 import { newId, nowIso } from "@/lib/utils";
 import { scanText } from "@/lib/pal/truth-guard";
 import { env } from "@/lib/env";
+import { getModel } from "@/lib/agent/models";
 import {
   ConnectorError,
   apolloEnrich,
@@ -129,6 +130,37 @@ export function sdrTools() {
         await store.audit({ actor: "human-approved", action: "email.sent", target: m.to, detail: { subject: m.subject, id: res.id } });
         await store.logActivity({ id: newId("act"), workspaceId: env().workspaceId, type: "email", account: m.account ?? m.to.split("@")[1], contact: m.to, count: 1, stage: "cold", notes: m.subject, occurredAt: nowIso(), createdAt: nowIso() });
         return { ...res, unverifiedClaims: flags.map((f) => `${f.type}: ${f.value}`) };
+      }),
+    }),
+
+    generate_personalization_snippets: tool({
+      description:
+        "Write a short personalised opener, why-now line and CTA for each contact, grounded ONLY in the research notes you pass (from research_web / enrich_contact). Facts not in the notes become [placeholders]. Free — no external sends.",
+      inputSchema: z.object({
+        offer: z.string().min(3).describe("What we sell, in one line"),
+        tone: z.enum(["consultative", "direct", "friendly", "formal"]).default("consultative"),
+        contacts: z
+          .array(z.object({ name: z.string(), title: z.string().optional(), company: z.string(), research_notes: z.string().optional().describe("Verified facts about the person/company, with sources") }))
+          .min(1)
+          .max(25),
+      }),
+      execute: safe("generate_personalization_snippets", async ({ offer, tone, contacts }: { offer: string; tone: string; contacts: { name: string; title?: string; company: string; research_notes?: string }[] }) => {
+        const snippets = await writeStructured(
+          z.object({ snippets: z.array(z.object({ name: z.string(), company: z.string(), opener: z.string(), why_now: z.string(), cta: z.string() })) }),
+          `You write cold-outreach personalisation. Tone: ${tone}. Use ONLY facts present in each contact's research_notes. If a fact is missing, write a [placeholder] instead — never invent events, metrics, funding, hiring or customer names. Opener ≤ 25 words, why_now ≤ 20 words, CTA is one low-friction question.`,
+          JSON.stringify({ offer, contacts }),
+          () => ({
+            snippets: contacts.map((c) => ({
+              name: c.name,
+              company: c.company,
+              opener: c.research_notes ? `Saw [specific detail from your notes on ${c.company}] — ${c.research_notes.slice(0, 80)}` : `Noticed [recent ${c.company} trigger event] — thought this might be timely.`,
+              why_now: `[Why ${offer} matters to ${c.title ?? "your team"} at ${c.company} right now]`,
+              cta: `Worth a 15-minute look at how ${offer} could help ${c.company}?`,
+            })),
+          }),
+        );
+        const flags = scanText(snippets.value.snippets.map((s) => `${s.opener} ${s.why_now}`).join("\n"));
+        return { ...snippets.value, generatedBy: snippets.by, unverifiedClaims: flags.map((f) => `${f.type}: ${f.value}`) };
       }),
     }),
 
@@ -258,6 +290,37 @@ export function sdrTools() {
       execute: async ({ period }) => summarizeActivities(await store.listActivities({ since: startOf(period), limit: 5000 }), period),
     }),
 
+    generate_template: tool({
+      description: "Generate a reusable outreach template (email, LinkedIn, DM, call opener or SMS) for a persona and goal, with [editable placeholders]. Optionally save it to the Library as a draft.",
+      inputSchema: z.object({
+        channel: z.enum(["email", "linkedin", "dm", "call", "sms"]),
+        persona: z.string().min(2).describe("Target persona / segment, e.g. 'VP Finance at 50–200 person SaaS'"),
+        goal: z.string().min(2).describe("e.g. 'book a discovery call', 'revive a stalled deal'"),
+        tone: z.enum(["consultative", "direct", "friendly", "formal"]).default("consultative"),
+        save_to_library: z.boolean().default(false),
+      }),
+      execute: safe("generate_template", async ({ channel, persona, goal, tone, save_to_library }: { channel: "email" | "linkedin" | "dm" | "call" | "sms"; persona: string; goal: string; tone: string; save_to_library: boolean }) => {
+        const t = await writeStructured(
+          z.object({ subject: z.string().nullable(), body: z.string(), placeholders: z.array(z.string()) }),
+          `You write sales ${channel} templates. Tone: ${tone}. Short, specific, no fluff. Use [square-bracket placeholders] for anything personal (name, company, trigger, proof point). Never invent statistics or customer names. subject is null unless the channel is email.`,
+          `Persona: ${persona}\nGoal: ${goal}`,
+          () => ({
+            subject: channel === "email" ? `[First name], quick idea for [Company]` : null,
+            body: `Hi [First name],\n\n[One line on a trigger relevant to ${persona}].\n\n[One line on the outcome we help with] — so you can ${goal.toLowerCase()}.\n\n[Proof point you can verify]\n\nOpen to [low-friction next step]?\n\n[Your name]`,
+            placeholders: ["First name", "Company", "trigger", "outcome", "proof point", "next step", "Your name"],
+          }),
+        );
+        let artifactId: string | undefined;
+        if (save_to_library) {
+          artifactId = newId("art");
+          const md = [`# ${channel.toUpperCase()} template — ${persona}`, "", `**Goal:** ${goal}`, t.value.subject ? `**Subject:** ${t.value.subject}` : "", "", t.value.body].join("\n");
+          const kind = channel === "linkedin" || channel === "dm" ? "linkedin_dm" : channel === "call" ? "call_script" : "email_sequence";
+          await store.saveArtifacts([{ id: artifactId, kind, group: "asset", title: `${channel} template — ${persona}`.slice(0, 120), markdown: md, status: "draft", version: 1, createdAt: nowIso(), provenance: { agentId: "enablement-assistant", model: t.by, promptVersion: "enablement@1", inputRefs: [] } }]);
+        }
+        return { channel, ...t.value, generatedBy: t.by, ...(artifactId ? { saved: true, artifactId, url: `/app/library/${artifactId}` } : {}) };
+      }),
+    }),
+
     add_suppression: tool({
       description: "Add an email or domain to the do-not-contact list (opt-outs, bounces, competitors, customers).",
       inputSchema: z.object({ value: z.string().min(3), reason: z.string().default("opt-out") }),
@@ -293,4 +356,22 @@ async function writeTable(table: string, rows: Record<string, unknown>[], upsert
   if (res.error) return { error: res.error.message };
   await getStore().audit({ actor: "human-approved", action: "table.write", target: table, detail: { rows: rows.length } });
   return { written: rows.length, table };
+}
+
+/**
+ * Structured writing for the template/personalisation tools. Uses the fast model of the
+ * caller's AI context (BYOK, metered house key, or unmetered); falls back to a
+ * deterministic [placeholder] skeleton in demo mode or if the model call fails.
+ */
+async function writeStructured<T>(schema: z.ZodType<T>, system: string, prompt: string, fallback: () => T): Promise<{ value: T; by: string }> {
+  const model = getModel("fast");
+  if (model) {
+    try {
+      const { output } = await generateText({ model, output: Output.object({ schema }), system, prompt, maxRetries: 1, telemetry: { functionId: "enably.tool.write" } });
+      if (output) return { value: output as T, by: "model" };
+    } catch (err) {
+      console.warn("[enably] structured tool write fell back to template:", (err as Error).message);
+    }
+  }
+  return { value: fallback(), by: "template" };
 }

@@ -194,6 +194,63 @@
     }
   },
   {
+    "name": "generate_personalization_snippets",
+    "description": "Write a short personalised opener, why-now line and CTA for each contact, grounded ONLY in the research notes you pass (from research_web / enrich_contact). Facts not in the notes become [placeholders]. Free — no external sends.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "offer": {
+          "type": "string",
+          "minLength": 3,
+          "description": "What we sell, in one line"
+        },
+        "tone": {
+          "default": "consultative",
+          "type": "string",
+          "enum": [
+            "consultative",
+            "direct",
+            "friendly",
+            "formal"
+          ]
+        },
+        "contacts": {
+          "minItems": 1,
+          "maxItems": 25,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string"
+              },
+              "research_notes": {
+                "description": "Verified facts about the person/company, with sources",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "company"
+            ]
+          }
+        }
+      },
+      "required": [
+        "offer",
+        "contacts"
+      ]
+    }
+  },
+  {
     "name": "create_email_sequence",
     "description": "Save a multi-step email sequence (3/5/7/12 steps) to the Library as a draft asset.",
     "needsApproval": false,
@@ -567,6 +624,56 @@
           ]
         }
       }
+    }
+  },
+  {
+    "name": "generate_template",
+    "description": "Generate a reusable outreach template (email, LinkedIn, DM, call opener or SMS) for a persona and goal, with [editable placeholders]. Optionally save it to the Library as a draft.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "enum": [
+            "email",
+            "linkedin",
+            "dm",
+            "call",
+            "sms"
+          ]
+        },
+        "persona": {
+          "type": "string",
+          "minLength": 2,
+          "description": "Target persona / segment, e.g. 'VP Finance at 50–200 person SaaS'"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 2,
+          "description": "e.g. 'book a discovery call', 'revive a stalled deal'"
+        },
+        "tone": {
+          "default": "consultative",
+          "type": "string",
+          "enum": [
+            "consultative",
+            "direct",
+            "friendly",
+            "formal"
+          ]
+        },
+        "save_to_library": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "channel",
+        "persona",
+        "goal"
+      ]
     }
   },
   {
