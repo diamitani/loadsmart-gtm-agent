@@ -31,7 +31,8 @@ export function sourceHash(root: string, slug: string, spec?: AgentSpec): string
   return h.digest("hex").slice(0, 16);
 }
 
-export function validateAgent(root: string, slug: string, tools: ImplementedTool[]): ValidateResult {
+/** `runtime: true` skips checks on files that are not bundled into serverless functions (docs/); CI runs the full check. */
+export function validateAgent(root: string, slug: string, tools: ImplementedTool[], opts: { runtime?: boolean } = {}): ValidateResult {
   const file = specPath(root, slug);
   if (!fs.existsSync(file)) return { ok: false, errors: [`${path.relative(root, file)} not found`] };
   let raw: unknown;
@@ -49,7 +50,7 @@ export function validateAgent(root: string, slug: string, tools: ImplementedTool
   for (const s of spec.tools.skills) if (!fs.existsSync(path.join(root, "agent", "skills", s, "SKILL.md"))) errors.push(`tools.skills: '${s}' has no agent/skills/${s}/SKILL.md`);
   for (const w of spec.tools.workflows) if (!fs.existsSync(path.join(root, "agent", "workflows", `${w}.json`))) errors.push(`tools.workflows: '${w}' has no agent/workflows/${w}.json`);
   for (const s of spec.tools.sub_agents) if (!fs.existsSync(specPath(root, s))) errors.push(`tools.sub_agents: '${s}' is not a forge agent (agents/${s}/agent.yaml)`);
-  for (const r of [...spec.knowledge.references, ...spec.knowledge.documentation]) if (!fs.existsSync(path.join(root, r))) errors.push(`knowledge: '${r}' not found`);
+  for (const r of [...spec.knowledge.references, ...(opts.runtime ? [] : spec.knowledge.documentation)]) if (!fs.existsSync(path.join(root, r))) errors.push(`knowledge: '${r}' not found`);
 
   const x = spec.x_enably;
   if (x) {

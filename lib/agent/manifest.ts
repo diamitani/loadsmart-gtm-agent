@@ -77,7 +77,7 @@ export function agentManifest() {
 
   // Forge: the spec validates against the schema + this repo, and build/ matches it.
   const toolList = Object.entries({ ...architectTools({}), ...sdrTools() }).map(([name, t]) => ({ name, needsApproval: (t as { needsApproval?: unknown }).needsApproval === true }));
-  const spec = validateAgent(process.cwd(), AGENT_SLUG, toolList);
+  const spec = validateAgent(process.cwd(), AGENT_SLUG, toolList, { runtime: true });
   for (const e of spec.errors) problems.push(`forge spec: ${e}`);
   let forge: { slug: string; version?: string; sourceHash?: string; build: "current" | "stale" | "missing" | "invalid-spec" } = { slug: AGENT_SLUG, build: "invalid-spec" };
   if (spec.ok && spec.spec && spec.sourceHash) {
