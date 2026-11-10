@@ -36,9 +36,9 @@ Users sign up and sign in at `/signup` and `/signin` with **Google** or **email 
 
 ### 2.3 Google sign-in
 
-1. **Google Cloud Console → APIs & Services → OAuth consent screen**: External, app name "Enably", support email, authorized domain `supabase.co` (add your custom domain too if you have one). Scopes: `openid`, `email`, `profile`. Publish the app (or add test users while in testing).
+1. **Google Cloud Console → APIs & Services → OAuth consent screen**: External, app name "Enably", support email, authorized domains `supabase.co` and `salesgency.com`. Scopes: `openid`, `email`, `profile`. Publish the app (or add test users while in testing).
 2. **Credentials → Create credentials → OAuth client ID → Web application**:
-   - Authorized JavaScript origins: `https://enablygtm.vercel.app` (and `http://localhost:3000` for local dev)
+   - Authorized JavaScript origins: `https://enably.salesgency.com`, `https://enablygtm.vercel.app` (and `http://localhost:3000` for local dev)
    - Authorized redirect URI: **`https://<project-ref>.supabase.co/auth/v1/callback`** (shown in Supabase under Authentication → Sign In / Providers → Google as "Callback URL")
 3. **Supabase → Authentication → Sign In / Providers → Google**: enable, paste the **Client ID** and **Client Secret**, save.
 
@@ -46,8 +46,9 @@ Users sign up and sign in at `/signup` and `/signin` with **Google** or **email 
 
 **Supabase → Authentication → URL Configuration**:
 
-- **Site URL**: `https://enablygtm.vercel.app`
+- **Site URL**: `https://enably.salesgency.com` (the production domain; used in confirmation emails)
 - **Redirect URLs** (add each):
+  - `https://enably.salesgency.com/auth/callback`
   - `https://enablygtm.vercel.app/auth/callback`
   - `https://enablygtm-*-gptpat.vercel.app/**` (Vercel preview deployments)
   - `http://localhost:3000/**` (local dev, optional)
@@ -88,6 +89,16 @@ Notes:
 - Conversations, Library and Knowledge are per user. Activity logs, suppressions, audit and evals stay workspace-wide. `/api/mcp` (bearer `ENABLY_MCP_TOKEN`) is the workspace operator and sees all users' data — keep that token private.
 - `POST /api/runs` follows the same rules as chat (caller's key or credits). Server-to-server automations can send `Authorization: Bearer $ENABLY_MCP_TOKEN` to use the house key unmetered. `/api/mcp` and durable callbacks use the house key unmetered (they have their own secrets).
 - Test locally with the Stripe CLI: `stripe listen --forward-to localhost:3000/api/billing/webhook` and use the printed `whsec_…`.
+
+## 2c. Custom domain (enably.salesgency.com)
+
+The domain is attached to the Vercel project. `salesgency.com` DNS is hosted at GoDaddy (`ns73/ns74.domaincontrol.com`), so add one record there:
+
+| Type | Name | Value | TTL |
+|---|---|---|---|
+| CNAME | `enably` | `db4a37c3e3a62a73.vercel-dns-017.com` (Vercel's project-specific target; `cname.vercel-dns.com` also works) | 1 hour |
+
+Vercel issues the SSL certificate automatically once the record resolves. Then use `https://enably.salesgency.com` as the Supabase Site URL (§2.4).
 
 ## 3. LangSmith (observability + evals)
 
