@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     ok: agent.ok,
     store: getStore().driver,
     integrations: integrationStatus().map(({ id, ok }) => ({ id, ok })),
-    agent: { ok: agent.ok, soulChars: agent.soulChars, skills: agent.skills.length, subagents: agent.subagents.length, tools: agent.tools.length, problems: agent.problems },
+    agent: { ok: agent.ok, forge: agent.forge, soulChars: agent.soulChars, skills: agent.skills.length, subagents: agent.subagents.length, tools: agent.tools.length, problems: agent.problems },
   };
   const q = new URL(req.url).searchParams;
   if (q.get("probe") === "model") body.model = await probeModel(q.get("model"));

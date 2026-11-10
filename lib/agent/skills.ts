@@ -38,8 +38,26 @@ function read(rel: string): string {
   return text;
 }
 
+/** The forge agent this runtime serves (agents/<slug>/agent.yaml → build/<slug>/). */
+export const AGENT_SLUG = "enably-gtm-architect";
+const BUILD_PROMPT = path.join(process.cwd(), "build", AGENT_SLUG, "system_prompt.md");
+
+/**
+ * The agent's soul as the model receives it: the forge-generated build/<slug>/system_prompt.md
+ * (agent/instructions/system.md + the spec's contract and guardrails), falling back to the raw
+ * soul if the build output is missing. The manifest check reports a missing or stale build.
+ */
 export function systemInstructions(): string {
-  return read("instructions/system.md");
+  if (!cache.has("@build")) {
+    let text = "";
+    try {
+      text = fs.readFileSync(BUILD_PROMPT, "utf8").replace(/^<!--[\s\S]*?-->\s*/, "");
+    } catch {
+      text = "";
+    }
+    cache.set("@build", text);
+  }
+  return cache.get("@build") || read("instructions/system.md");
 }
 
 export function skillText(name: string, maxChars = 6000): string {

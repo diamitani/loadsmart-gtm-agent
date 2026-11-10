@@ -1,0 +1,26 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate every agent spec and check build/ is current
+        run: npm run forge:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Fail if a real env file is committed
+        run: |
+          if git ls-files | grep -E '(^|/)\.env(\.local)?$'; then
+            echo "A real .env file is committed. Remove it and rotate every key in it."
+            exit 1
+          fi
