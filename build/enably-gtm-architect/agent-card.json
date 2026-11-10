@@ -1,0 +1,30 @@
+{
+  "protocol": "a2a",
+  "name": "Enably GTM Architect",
+  "description": "Compile any go-to-market request into a complete, verified GTM asset package.",
+  "version": "1.1.0",
+  "url": "/api/agents/enably-gtm-architect",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "build-package",
+      "name": "build-package",
+      "description": "PAL pipeline: intake → intent → foundation (W gate) → instruct → plan → build → test → present."
+    },
+    {
+      "id": "revise-and-operate",
+      "name": "revise-and-operate",
+      "description": "Chat over an existing package: revise assets, search knowledge, SDR research, templates, approval-gated sends and CRM writes."
+    }
+  ],
+  "defaultInputModes": [
+    "text"
+  ],
+  "defaultOutputModes": [
+    "text"
+  ],
+  "note": "Discovery only — the A2A call endpoint is not built."
+}

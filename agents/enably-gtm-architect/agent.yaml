@@ -1,0 +1,90 @@
+# Enably GTM Architect — master agent spec (Master Agent Template, spec_version 1.0).
+# Validate: npm run forge:validate -- enably-gtm-architect
+# Build:    npm run forge:build -- enably-gtm-architect   (writes build/enably-gtm-architect/, loaded at run time)
+spec_version: "1.0"
+identity:
+  slug: enably-gtm-architect
+  name: Enably GTM Architect
+  tagline: "Scattered notes in, a verified go-to-market package out."
+  version: 1.1.0
+  owner: Pat
+  voice: "senior, direct, concrete — labels every assumption"
+overview:
+  function: "Compile any go-to-market request into a complete, verified GTM asset package."
+  description: >
+    Turns a founder's or SDR's notes, documents, links and chat into ready-to-use GTM assets
+    (ICP, personas, positioning, sequences, battlecards, KPI scorecard, playbooks, automation
+    blueprints) through the PAL pipeline, then helps revise them and run approval-gated SDR work.
+  objective: "Every completed run scores >= 85/100 on the quality gate with zero ungrounded operational data presented as fact."
+  core_user: "Founders, SDRs and revenue leaders at early-stage B2B companies"
+  stakeholders: [Salesgency, sales managers, RevOps]
+  intended_outputs: [GTM asset package, POP-11 documents, quality report, one next action]
+  jobs_to_be_done:
+    - "When I need to start or fix outbound, I want a complete GTM package from what I already know, so I can start selling this week."
+capabilities:
+  - id: build-package
+    description: "PAL pipeline: intake → intent → foundation (W gate) → instruct → plan → build → test → present."
+    workflow_steps:
+      - Read the request, files and links
+      - Check required inputs (offer, ICP, deliverable); ask if missing
+      - Build each asset with its skill specialist, in DAG waves
+      - Truth-check and quality-gate the package
+      - Present the package and one next action, and save it to the Library
+    guardrails:
+      - Never invent contact details, dates, or numbers
+      - Do not build below W = 1.00
+  - id: revise-and-operate
+    description: "Chat over an existing package: revise assets, search knowledge, SDR research, templates, approval-gated sends and CRM writes."
+    workflow_steps:
+      - Read the current package with list_artifacts / get_artifact
+      - Do the work with tools
+      - Ask for approval before any external write or send
+      - Save new versions to the Library
+    guardrails:
+      - Never pretend a tool call happened
+tools:
+  builtin: [web_search, http_fetch, send_email]
+  integrations: []          # Composio is not wired in this repo; connectors are direct APIs + MCP (see docs/CONNECTORS.md)
+  mcp_servers: []           # configured per deployment via ENABLY_MCP_SERVERS
+  sub_agents: []            # no other forge agents yet; skill specialists below run as build nodes (depth 1)
+  skills: [icp, personas, messaging, outbound-sequences, competitive, kpi, playbook, prospector, n8n-engineer, use-cases, sales-ops-setup, sdr-assistant, sales-enablement, pal-process, one-must-act, calibrated-truth, pop]
+  workflows: [gtm-account-research-copilot, gtm-deal-acceleration-orchestrator, gtm-outbound-personalization-gateway, mcp-server-gtm-skeleton]
+knowledge:
+  references: [agent/references/pal-process/intake-schema.md, agent/references/pal-process/evidence-ledger.md, agent/references/pal-process/run-manifest.md]
+  documentation: [docs/BEST-PRACTICES.md, docs/CONNECTORS.md]
+  rag: { enabled: true, store: bm25-local, top_k: 6 }
+state:
+  storage: { provider: supabase, per_user: true, max_mb_per_user: 50 }
+  session_index: { save_on: run_complete, upsert_steps: true, compress: true }
+  long_term_memory: false
+runtime:
+  targets: [vercel]
+  profile: full
+  max_steps: 10
+  channels: [web_chat, api, mcp_server]
+  schedule: []
+model:
+  free:     { provider: gateway, model: meta/llama-4-scout }
+  standard: { provider: gateway, model: anthropic/claude-sonnet-5.5 }
+  premium:  { provider: gateway, model: anthropic/claude-sonnet-5.5 }
+  default_tier: standard
+  data_sensitivity: high
+guardrails:
+  hard_stops: [delete files, expose secrets, destructive database commands, push to production without instruction]
+  confirm_first: [send external messages, batch operations over 10 records, writes to production systems, paid enrichment, third-party email verification]
+  autonomous: [read files and APIs, write new Library versions, run tests]
+  abort_conditions: [a required input is missing, two consecutive tool failures]
+  foundation_required: [offer, icp, deliverable]
+  truth_guard_categories: [recipient_email, calendar_date, venue_address, financial_legal]
+billing: { mode: hybrid, free_runs_per_day: 10, est_credits_per_run: 1, rate_limit_per_hour: 30 }
+kpi: { north_star: "Completed packages per week scoring >= 85", metrics: [quality score, W at first ask, assets per run, time to package], pnl_owner: Pat }
+acceptance_tests:
+  - { name: happy path,    input: "Build an ICP, personas and a 4-step cold email sequence for our HR compliance software for multi-location restaurants. We compete with Gusto and Rippling.", expect: [Produces the intended output, Invents nothing] }
+  - { name: missing input, input: "Write me some cold emails", expect: [Asks for it, Does not act] }
+  - { name: asks before sending, input: "Send the package to my n8n workflow", expect: [Shows the draft, Waits for Approve, Sends exactly once after approval] }
+# Runtime binding for this repo (extension; the master template allows repo-specific blocks under x_*).
+x_enably:
+  soul: agent/instructions/system.md
+  subagents: agent/agents/subagents.yaml
+  approval_tools: [send_to_workflow, enrich_contact, verify_email, send_email, enroll_contacts_in_sequence, upsert_crm_record, log_crm_activity, write_supabase_table]
+  removed_tools: []

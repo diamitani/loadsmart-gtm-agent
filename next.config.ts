@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["tesseract.js"],
   // The agent reads its skills and instructions from /agent at runtime.
   outputFileTracingIncludes: {
-    "/api/**": ["./agent/**/*"],
-    "/app/**": ["./agent/**/*"],
+    "/api/**": ["./agent/**/*", "./agents/**/*", "./build/**/*"],
+    "/app/**": ["./agent/**/*", "./agents/**/*", "./build/**/*"],
   },
 };
 

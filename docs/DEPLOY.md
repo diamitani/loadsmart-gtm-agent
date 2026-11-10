@@ -164,3 +164,17 @@ Add any SDR keys you have (`SERPAPI_API_KEY`, `APOLLO_API_KEY`, `HUNTER_API_KEY`
 ```
 
 Returns the run id, status, quality and artifact list (or a `clarification` if W < 1.00). Requires a signed-in session cookie (the run is saved to that user), or `Authorization: Bearer $ENABLY_MCP_TOKEN` for server-to-server automations (saved as a workspace run, visible via `/api/mcp`).
+
+## Verify the agent backend
+
+- `GET /api/health` reports whether the agent's soul (`agent/instructions/system.md`), skills, subagents and tools were bundled and wired (`agent.problems` must be empty).
+- `GET /api/health?probe=model` (preview/local only — disabled in production) makes one tiny house-model call through AI Gateway (OIDC on Vercel) and reports `model.ok`.
+- `npm test` runs `tests/agent.test.ts`: the full chat endpoint with a scripted mock model (PAL build → skill-specialist subagents → presentation, then the chat tool loop and the approval gate).
+
+## Agent spec (Agent Forge)
+
+The agent is described by one spec, `agents/enably-gtm-architect/agent.yaml` (Master Agent Template, spec_version 1.0).
+
+- `npm run forge:validate` — schema + repo checks (skills, workflows, references exist; every approval-gated tool in code is declared in `x_enably.approval_tools` and vice versa).
+- `npm run forge:build -- enably-gtm-architect` — writes `build/enably-gtm-architect/` (`system_prompt.md`, `covenant.md`, `agent.json`, `agent-card.json`, `SKILL.md`). The runtime loads `system_prompt.md` as the system prompt.
+- `npm run forge:check` — CI fails if `build/` is stale. `/api/health` reports `agent.forge.build`.

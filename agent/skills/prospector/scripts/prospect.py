@@ -1,4 +1,4 @@
-import argparse, csv, hashlib, importlib, json, re, time
+import argparse, csv, hashlib, importlib, json, re, sys, time
 from datetime import datetime, timezone, date
 from pathlib import Path
 
@@ -312,6 +312,19 @@ def export(data, folder):
     counts={s:sum(e['verification']['status']==s for l in data['leads'] for e in l['emails']) for s in ('valid','accept_all','not_checked','approval_required','quota_exhausted')}
     (folder/'run-report.md').write_text('# Prospecting run\n\n'+f"Leads: {len(data['leads'])}\n\nVerification counts: {counts}\n\nBlockers: {data['blockers']}\n\n"+'Scores prioritize review; they are not purchase probabilities. No outreach or checker upload was performed. Syntax/MX pre-check does not prove mailbox existence.\n')
 
+def load_adapter(name):
+    # Adapters live next to this script when the skill is installed standalone
+    # (the 'runtime.' package prefix is used when it is vendored into a harness).
+    here=str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0,here)
+    try:
+        return importlib.import_module(name)
+    except ModuleNotFoundError as err:
+        if name.startswith('runtime.') and err.name in ('runtime',name):
+            return importlib.import_module(name.split('.',1)[1])
+        raise
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--adapter',default='runtime.demo_adapter')
@@ -321,7 +334,7 @@ def main():
     p.add_argument('--suppression')
     p.add_argument('--allow-ddg',action='store_true',help='Only enable after source-permission review; not an official DuckDuckGo API.')
     a=p.parse_args()
-    adapter=importlib.import_module(a.adapter)
+    adapter=load_adapter(a.adapter)
     suppression=json.loads(Path(a.suppression).read_text()) if a.suppression else {'domains':[],'emails':[]}
     suppression={'domains':{str(x).lower() for x in suppression.get('domains',[])},'emails':{str(x).lower() for x in suppression.get('emails',[])}}
     data=Engine(adapter,a.allow_ddg).run(a.brief,a.project,suppression)

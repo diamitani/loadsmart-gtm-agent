@@ -12,6 +12,7 @@ spec:
     entrypoint: lib/agent/pipeline.ts
     chat: app/api/chat/route.ts
     durable: workers/gtm-durable (Cloudflare Agents / Durable Objects)
+    manifest_check: lib/agent/manifest.ts (GET /api/health reports agent wiring problems)
     observability: langsmith (traceable spans per stage)
   pipeline: [intake, intent, foundation, instruct, plan, build, test, present]
   inputs: [chat_messages, questionnaire, files, links, webhook_payload]
@@ -28,6 +29,7 @@ spec:
     - automation-engineer
   tools:
     - search_knowledge      # RAG-DAL over the workspace knowledge base
+    - read_document         # any public URL: web, PDF, Office, image (OCR/vision), audio/video
     - list_artifacts        # read the GTM Library
     - get_artifact
     - revise_artifact       # writes a new version (human can roll back)

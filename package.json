@@ -2,7 +2,7 @@
   "name": "enablygtm",
   "version": "1.0.0",
   "private": true,
-  "description": "Enably GTM Architect — the AI go-to-market architect agent (PAL intake → intent → foundation → instruct → plan → build → test → present).",
+  "description": "Enably GTM Architect \u2014 the AI go-to-market architect agent (PAL intake \u2192 intent \u2192 foundation \u2192 instruct \u2192 plan \u2192 build \u2192 test \u2192 present).",
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,10 @@
     "test:watch": "vitest",
     "eval": "tsx --conditions=react-server --tsconfig tsconfig.json evals/run.ts",
     "cf:dev": "npm --prefix workers/gtm-durable run dev",
-    "cf:deploy": "npm --prefix workers/gtm-durable run deploy"
+    "cf:deploy": "npm --prefix workers/gtm-durable run deploy",
+    "forge:validate": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/forge.ts validate",
+    "forge:build": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/forge.ts build",
+    "forge:check": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/forge.ts check"
   },
   "engines": {
     "node": ">=20.9"
@@ -40,6 +43,7 @@
     "tailwind-merge": "^3.7.0",
     "tesseract.js": "^7.0.0",
     "unpdf": "^2.1.0",
+    "yaml": "^2.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
