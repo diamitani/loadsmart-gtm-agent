@@ -170,3 +170,12 @@ describe("chat endpoint end to end (mock model)", () => {
     expect(c.parts.filter((p) => p.type === "text-delta").map((p) => p.delta).join("")).toMatch(/demo mode/i);
   });
 });
+
+describe("model errors shown in chat", () => {
+  it("explains a free-tier AI Gateway restriction instead of a raw error", async () => {
+    const { friendlyModelError } = await import("@/lib/agent/errors");
+    expect(friendlyModelError(new Error("Free tier users do not have access to this model. Upgrade…"))).toMatch(/free AI Gateway tier/);
+    expect(friendlyModelError(Object.assign(new Error("nope"), { statusCode: 429 }))).toMatch(/rate-limiting/);
+    expect(friendlyModelError(new Error("boom"))).toBe("boom");
+  });
+});

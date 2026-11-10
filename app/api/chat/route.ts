@@ -13,6 +13,7 @@ import { connectorStatus } from "@/lib/connectors/registry";
 import { quickAction } from "@/lib/agent/quick-actions";
 import { skillText } from "@/lib/agent/skills";
 import { nowIso } from "@/lib/utils";
+import { friendlyModelError } from "@/lib/agent/errors";
 import { presentationMarkdown } from "@/lib/agent/present";
 import { requestAiContext, withAiContext, type AiContext } from "@/lib/agent/ai-context";
 import { currentUser } from "@/lib/auth/user";
@@ -148,7 +149,7 @@ async function chat(req: Request, userId: string) {
     })),
     onError: (err) => {
       console.error("[enably] chat error", err);
-      return err instanceof Error ? err.message : "Something went wrong";
+      return friendlyModelError(err);
     },
     onEnd: async ({ messages: finalMessages }) => withUserScope(userId, async () => {
       await closeMcp?.();
@@ -195,3 +196,4 @@ function writeText(writer: { write: (c: never) => void }, text: string) {
   w({ type: "text-delta", id, delta: text });
   w({ type: "text-end", id });
 }
+
