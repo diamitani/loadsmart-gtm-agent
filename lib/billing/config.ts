@@ -15,7 +15,7 @@ export function byokModels(provider: ByokProvider): { main: string; fast: string
   const e = process.env;
   if (provider === "anthropic") return { main: e.ENABLY_BYOK_ANTHROPIC_MODEL || "claude-sonnet-5-5", fast: e.ENABLY_BYOK_ANTHROPIC_FAST_MODEL || "claude-haiku-5-5" };
   if (provider === "openai") return { main: e.ENABLY_BYOK_OPENAI_MODEL || "gpt-5.5", fast: e.ENABLY_BYOK_OPENAI_FAST_MODEL || "gpt-5.4-mini" };
-  return { main: e.ENABLY_MODEL || "anthropic/claude-sonnet-5.5", fast: e.ENABLY_FAST_MODEL || "anthropic/claude-haiku-5.5" };
+  return { main: e.ENABLY_MODEL || "nvidia/nemotron-3-ultra-550b-a55b", fast: e.ENABLY_FAST_MODEL || "meta/llama-4-scout" };
 }
 
 export interface CreditPack {

@@ -5,6 +5,9 @@ import { integrationStatus, env } from "@/lib/env";
 import { getStore } from "@/lib/db";
 import { agentManifest } from "@/lib/agent/manifest";
 import { getModel } from "@/lib/agent/models";
+import { systemInstructions } from "@/lib/agent/skills";
+import { architectTools } from "@/lib/agent/tools";
+import { sdrTools } from "@/lib/connectors/sdr-tools";
 
 /**
  * Liveness + agent wiring check (public, secret-free).
@@ -13,6 +16,8 @@ import { getModel } from "@/lib/agent/models";
  *                                        subagents were bundled and load at runtime.
  *   GET /api/health?probe=model        → also makes one tiny call with the house model (AI Gateway / OIDC).
  *   GET /api/health?probe=agent        → text + tool call + structured output — what the agent needs.
+ *                                        plus the real agent loop: soul + all 24 tools, one free tool call
+ *                                        (truth_check) and one approval-gated call that must pause.
  *       &model=provider/id             → try a specific gateway model instead of ENABLY_FAST_MODEL.
  *   Probes are disabled in production so they can't be used to spend tokens;
  *   preview deployments sit behind Vercel Authentication.
@@ -67,6 +72,22 @@ async function probeModel(override: string | null, full: boolean) {
       return /acme/i.test(output.company) && output.motion === "outbound";
     });
   }
-  out.ok = ["text", "toolCall", "structured"].every((k) => !(k in out) || (out[k] as { ok: boolean }).ok);
+  if (full) {
+    // The real agent: soul + every tool. Main model unless overridden.
+    const main = id ? model : getModel("main", { accountId: null, mode: "unmetered", balance: 0, creditsPerCall: 0 })!;
+    out.agentModel = id ?? e.model;
+    const tools = { ...architectTools({}), ...sdrTools() };
+    await run("agentTool", async () => {
+      const r = await generateText({ model: main, system: systemInstructions(), tools, prompt: "Use the truth_check tool on this copy, then tell me in one sentence what needs verifying: \"Call Dana at 555-123-4567 — Acme grew revenue 300% last year.\"", stopWhen: stepCountIs(3), maxOutputTokens: 600, maxRetries: 0 });
+      return r.steps.some((s) => s.toolResults.some((t) => t.toolName === "truth_check"));
+    });
+    await run("approvalGate", async () => {
+      const r = await generateText({ model: main, system: systemInstructions(), tools, prompt: "Send the current package to my automation workflow to create Asana tasks. Call send_to_workflow now.", stopWhen: stepCountIs(3), maxOutputTokens: 400, maxRetries: 0 });
+      const requested = r.steps.some((s) => s.content.some((c) => c.type === "tool-approval-request"));
+      const executed = r.steps.some((s) => s.toolResults.some((t) => t.toolName === "send_to_workflow"));
+      return requested && !executed;
+    });
+  }
+  out.ok = ["text", "toolCall", "structured", "agentTool", "approvalGate"].every((k) => !(k in out) || (out[k] as { ok: boolean }).ok);
   return out;
 }

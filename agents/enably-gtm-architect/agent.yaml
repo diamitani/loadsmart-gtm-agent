@@ -65,8 +65,8 @@ runtime:
   schedule: []
 model:
   free:     { provider: gateway, model: meta/llama-4-scout }
-  standard: { provider: gateway, model: anthropic/claude-sonnet-5.5 }
-  premium:  { provider: gateway, model: anthropic/claude-sonnet-5.5 }
+  standard: { provider: gateway, model: nvidia/nemotron-3-ultra-550b-a55b }   # free-tier Gateway; verified tools + structured output
+  premium:  { provider: gateway, model: anthropic/claude-sonnet-5.5 }          # needs paid AI Gateway credits
   default_tier: standard
   data_sensitivity: high
 guardrails:
