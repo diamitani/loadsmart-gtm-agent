@@ -1,0 +1,56 @@
+{
+  "object": "Account",
+  "fields": [
+    {
+      "fullName": "ABM_Pod__c",
+      "label": "ABM Pod",
+      "type": "Picklist",
+      "valueSet": ["Pod 1 (Mid-Market FTL)", "Pod 2 (Enterprise TMS)", "Pod 3 (Opendock Facilities)", "Pod 4 (Loadsmart AI Operations)"]
+    },
+    {
+      "fullName": "Target_Product__c",
+      "label": "Target Product",
+      "type": "Picklist",
+      "valueSet": ["ShipperGuide TMS", "Opendock", "Loadsmart AI", "Freight Brokerage"]
+    },
+    {
+      "fullName": "ICP_Score__c",
+      "label": "ICP Fit Score",
+      "type": "Number",
+      "precision": 3,
+      "scale": 0
+    },
+    {
+      "fullName": "Estimated_Freight_Spend__c",
+      "label": "Estimated Freight Spend",
+      "type": "Currency",
+      "precision": 18,
+      "scale": 0
+    },
+    {
+      "fullName": "Facility_Count__c",
+      "label": "Facility / Warehouse Count",
+      "type": "Number",
+      "precision": 6,
+      "scale": 0
+    },
+    {
+      "fullName": "Incumbent_TMS__c",
+      "label": "Incumbent TMS / WMS",
+      "type": "Text",
+      "length": 100
+    },
+    {
+      "fullName": "Latest_Buying_Trigger__c",
+      "label": "Latest Buying Trigger",
+      "type": "Text",
+      "length": 255
+    },
+    {
+      "fullName": "Outreach_Disqualification_Reason__c",
+      "label": "Outreach Disqualification Reason",
+      "type": "Picklist",
+      "valueSet": ["NO_FREIGHT_SPEND", "NO_DECISION_MAKER", "CRM_COLLISION", "UNRESPONSIVE_14D", "BAD_DATA"]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "table_name": "Loadsmart Enterprise Freight Prospecting",
+  "version": "v1.0.0",
+  "columns": [
+    { "name": "Company Name", "type": "text", "source": "input" },
+    { "name": "Domain", "type": "url", "source": "input" },
+    { "name": "Target Product", "type": "single_select", "options": ["ShipperGuide TMS", "Opendock", "Loadsmart AI", "Brokerage"] },
+    { "name": "Target Persona", "type": "single_select", "options": ["VP Logistics", "Director Supply Chain", "Plant Manager", "CIO"] },
+    {
+      "name": "Waterfall Step 1 - Apollo",
+      "type": "enrichment",
+      "provider": "apollo",
+      "action": "find_people_at_company",
+      "inputs": { "titles": ["VP Logistics", "Transportation Director", "VP Supply Chain", "Plant Manager"] }
+    },
+    {
+      "name": "Waterfall Step 2 - Hunter",
+      "type": "enrichment",
+      "provider": "hunter",
+      "action": "verify_email",
+      "condition": "if Apollo email is missing or unverified"
+    },
+    {
+      "name": "Waterfall Step 3 - Prospeo / Dropcontact",
+      "type": "enrichment",
+      "provider": "prospeo",
+      "action": "find_mobile_phone",
+      "condition": "if email verified"
+    },
+    {
+      "name": "Validation Score (W)",
+      "type": "formula",
+      "formula": "IF(AND(NOT(ISBLANK([Email])), NOT(ISBLANK([Job Title])), NOT(ISBLANK([LinkedIn]))), 1.00, 0.75)"
+    }
+  ]
+}

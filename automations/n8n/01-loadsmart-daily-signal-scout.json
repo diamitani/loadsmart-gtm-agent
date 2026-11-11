@@ -1,0 +1,93 @@
+{
+  "name": "01 - Loadsmart Daily Signal Scout (06:00 CT)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "Schedule Trigger (06:00 CT)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.loadsmart-gtm.app/api/pods",
+        "options": {}
+      },
+      "id": "node-fetch-pods",
+      "name": "Fetch Active Pod Targets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ingest signals from FreightWaves, 10-K, logistics job postings, and facility expansions\nconst pods = $input.first().json.pods || [];\nconst nominatedAccounts = [];\n\nfor (const pod of pods) {\n  nominatedAccounts.push({\n    pod_id: pod.id,\n    product_focus: pod.product_focus,\n    status: 'NOMINATED',\n    batch_date: new Date().toISOString().split('T')[0],\n    target_quota: 20\n  });\n}\n\nreturn nominatedAccounts.map(item => ({ json: item }));"
+      },
+      "id": "node-signal-ingest",
+      "name": "Ingest & Score Buying Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.loadsmart-gtm.app/api/pipeline",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"stage\": \"la-signal\",\n  \"podId\": $json.pod_id,\n  \"batchDate\": $json.batch_date\n}"
+      },
+      "id": "node-dispatch-nominees",
+      "name": "Dispatch Nominees to GTM Agent OS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (06:00 CT)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Active Pod Targets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Active Pod Targets": {
+      "main": [
+        [
+          {
+            "node": "Ingest & Score Buying Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingest & Score Buying Signals": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Nominees to GTM Agent OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+# dependencies
+node_modules
+node_modules/
+
+# next.js build
+.next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# local data store (dev only)
+.data
+.data/
+
+# environment files — never commit secrets
+.env
+.env*.local
+
+# cloudflare
+.wrangler/
+
+# mac system files
+.DS_Store

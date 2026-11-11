@@ -1,0 +1,28 @@
+# Pods, caps and approval owners. Replace the placeholders.
+
+pods:
+  - id: pod-1
+    ae: "[AE name]"
+    sdr: "[SDR name]"
+    sender_mailbox: "[sdr@loadsmart.com]"
+    territory: "[territory]"
+  - id: pod-2
+    ae: "[AE name]"
+    sdr: "[SDR name]"
+    sender_mailbox: "[sdr@loadsmart.com]"
+    territory: "[territory]"
+  # add pods here
+
+caps:
+  accounts_per_pod: 20
+  new_enrollments_per_pod_per_day: 25        # conservative start
+  emails_per_mailbox_per_day: 50             # ceiling after ramp; see config/sending.yaml (5 inboxes per rep)
+  touches_per_account_per_week_all_products: 6   # account collision guard across 3 products
+
+approvals:
+  weekly_abm_list: "RevOps (Prath's team)"
+  daily_email_batch: "Pod SDR (spot-check 3, approve batch)"
+  salesforce_writes: "RevOps-owned integration user only"
+  copy_rule_changes: "Marketing (Mu's team)"
+
+timezone: America/Chicago

@@ -1,0 +1,67 @@
+# Loadsmart ABM - Buyer persona map (v0 DRAFT)
+# One primary persona per product. Pains, triggers and objections are WORKING ASSUMPTIONS
+# until 10 discovery calls per product confirm them. Never blend two personas in one email.
+
+version: 0.1.0
+updated: 2026-11-11
+owner: Marketing + RevOps
+
+products:
+
+  opendock:
+    label: "Opendock (dock, gate and yard)"
+    persona_id: ops_dock
+    titles_include: ["Warehouse Manager", "Distribution Center Manager", "DC Manager",
+                     "Director of Distribution", "Site General Manager", "Operations Manager"]
+    functions: ["Warehouse", "Distribution", "Operations"]
+    titles_exclude: ["IT", "Software", "Sales", "Marketing", "HR"]
+    seniority: ["Manager", "Senior Manager", "Director", "VP"]
+    decision_role: "Champion at site; economic buyer is regional or VP Ops"
+    goals: ["Dock throughput", "On-time appointments", "Lower detention and dwell"]
+    pains_assumed: ["Trucks waiting at the gate", "Phone/email appointment booking", "Detention fees"]
+    triggers: ["New DC or site opening", "Detention cost spike", "New ops leader", "WMS change"]
+    objections: ["Carriers won't use another portal", "Our WMS already does this"]
+    channels: ["Phone", "LinkedIn", "Email"]
+    secondary: ["Receiving Supervisor", "Inbound Transportation Coordinator"]
+    soft_cta: "Worth comparing notes on how your sites book inbound?"
+    proof_slot: "[Opendock customer result, approved by Marketing]"
+
+  shipperguide:
+    label: "ShipperGuide (TMS)"
+    persona_id: transport_tms
+    titles_include: ["Transportation Manager", "Director of Transportation", "Logistics Manager",
+                     "Director of Logistics", "Freight Manager"]
+    functions: ["Transportation", "Logistics"]
+    titles_exclude: ["Warehouse Associate", "Driver", "Sales"]
+    seniority: ["Manager", "Senior Manager", "Director"]
+    decision_role: "Champion and evaluator; VP signs"
+    goals: ["Cost per load", "Tender acceptance", "On-time delivery"]
+    pains_assumed: ["Planning across spreadsheets and disconnected tools", "Manual tendering"]
+    triggers: ["TMS renewal", "Freight RFP season", "New transportation leader", "Hiring freight analysts"]
+    objections: ["We just implemented a TMS", "Switching cost"]
+    channels: ["Email", "Phone", "Industry events"]
+    secondary: ["Procurement", "Finance / freight audit"]
+    soft_cta: "Open to a 20-minute look at how teams run tendering in one place?"
+    proof_slot: "[ShipperGuide customer result, approved by Marketing]"
+
+  loadsmart_ai:
+    label: "Loadsmart AI (agents)"
+    persona_id: supply_chain_exec
+    titles_include: ["VP Supply Chain", "VP Logistics", "Head of Transportation",
+                     "SVP Operations", "Chief Supply Chain Officer"]
+    functions: ["Supply Chain", "Logistics", "Operations"]
+    titles_exclude: ["Intern", "Coordinator"]
+    seniority: ["VP", "SVP", "C-level", "Head"]
+    decision_role: "Economic buyer; pulls in IT and the TMS owner"
+    goals: ["Freight cost", "Team capacity", "Exception handling time"]
+    pains_assumed: ["Repetitive follow-ups and check calls consume the team"]
+    triggers: ["AI/automation mandate", "Headcount freeze", "New VP Supply Chain", "Earnings call on freight cost"]
+    objections: ["AI isn't reliable for freight", "Data access and security"]
+    channels: ["Email", "LinkedIn", "Executive referral"]
+    secondary: ["IT / systems owner", "CFO"]
+    soft_cta: "Would it help to see which follow-ups an agent could take on your next 100 loads?"
+    proof_slot: "[Loadsmart AI result + methodology, approved by Marketing]"
+
+# Proof points on loadsmart.com (customer counts, appointment volumes, agent autonomy %) are
+# company-claimed. They may appear in copy ONLY after Marketing marks them approved here:
+approved_proof_points: []   # e.g. - {product: opendock, text: "...", source: "...", approved_by: "..."}
