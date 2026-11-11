@@ -5,9 +5,10 @@
   "description": "Enably GTM Architect \u2014 the AI go-to-market architect agent (PAL intake \u2192 intent \u2192 foundation \u2192 instruct \u2192 plan \u2192 build \u2192 test \u2192 present).",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
+    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

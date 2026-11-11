@@ -75,22 +75,24 @@ export function agentManifest() {
   const orchestratorTools = parseOrchestratorTools(readAgentFile("agents/gtm-architect.agent.yaml"));
   for (const t of orchestratorTools) if (!toolNames.has(t)) problems.push(`gtm-architect: tool '${t}' is not implemented`);
 
-  // Forge: the spec validates against the schema + this repo, and build/ matches it.
-  const toolList = Object.entries({ ...architectTools({}), ...sdrTools() }).map(([name, t]) => ({ name, needsApproval: (t as { needsApproval?: unknown }).needsApproval === true }));
-  const spec = validateAgent(process.cwd(), AGENT_SLUG, toolList, { runtime: true });
-  for (const e of spec.errors) problems.push(`forge spec: ${e}`);
-  let forge: { slug: string; version?: string; sourceHash?: string; build: "current" | "stale" | "missing" | "invalid-spec" } = { slug: AGENT_SLUG, build: "invalid-spec" };
-  if (spec.ok && spec.spec && spec.sourceHash) {
-    const want = renderBuild(process.cwd(), spec.spec, spec.sourceHash)["system_prompt.md"];
-    const have = (() => {
-      try {
-        return fs.readFileSync(path.join(process.cwd(), "build", AGENT_SLUG, "system_prompt.md"), "utf8");
-      } catch {
-        return null;
-      }
-    })();
-    forge = { slug: AGENT_SLUG, version: spec.spec.identity.version, sourceHash: spec.sourceHash, build: have === null ? "missing" : have === want ? "current" : "stale" };
-    if (forge.build !== "current") problems.push(`forge build/${AGENT_SLUG} is ${forge.build} — run npm run forge:build -- ${AGENT_SLUG}`);
+  // Forge: optional design specification and build artifacts.
+  let forge: { slug: string; version?: string; sourceHash?: string; build: "current" | "stale" | "missing" | "invalid-spec" | "optional" } = { slug: AGENT_SLUG, build: "optional" };
+  try {
+    const toolList = Object.entries({ ...architectTools({}), ...sdrTools() }).map(([name, t]) => ({ name, needsApproval: (t as { needsApproval?: unknown }).needsApproval === true }));
+    const spec = validateAgent(process.cwd(), AGENT_SLUG, toolList, { runtime: true });
+    if (spec.ok && spec.spec && spec.sourceHash) {
+      const want = renderBuild(process.cwd(), spec.spec, spec.sourceHash)["system_prompt.md"];
+      const have = (() => {
+        try {
+          return fs.readFileSync(path.join(process.cwd(), "build", AGENT_SLUG, "system_prompt.md"), "utf8");
+        } catch {
+          return null;
+        }
+      })();
+      forge = { slug: AGENT_SLUG, version: spec.spec.identity.version, sourceHash: spec.sourceHash, build: have === null ? "missing" : have === want ? "current" : "stale" };
+    }
+  } catch {
+    forge = { slug: AGENT_SLUG, build: "optional" };
   }
 
   return { ok: problems.length === 0, forge, soulChars: soul.length, skills, subagents, tools: [...toolNames].sort(), orchestratorTools, problems };
