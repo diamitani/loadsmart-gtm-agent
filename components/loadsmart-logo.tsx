@@ -43,3 +43,4 @@ export function LoadsmartLogo({ className = "h-7", showTag = true }: { className
     </div>
   );
 }
+

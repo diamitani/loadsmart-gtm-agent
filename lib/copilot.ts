@@ -1,7 +1,7 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { tool, type LanguageModel } from "ai";
 import { z } from "zod";
-import { kit, getSkill } from "./kit";
+import { kit, getSkill, getDocument, getAutomation, getConfigFile } from "./kit";
 
 /**
  * Model routing (agent is data; the runtime picks the model):
@@ -29,15 +29,18 @@ export const systemPrompt = `${kit.agentPrompt}
 ## This hosted deployment
 
 - You are running on the public demo site for Patrick Diamitani's Loadsmart GTM Engineer case. Visitors may be Loadsmart's Sales, Marketing or RevOps leaders, or pod reps.
-- You are NOT connected to Salesforce, Gong, ZoomInfo, Clay or any mailbox here. When asked for live numbers, accounts or contacts, say so plainly, then explain which skill would get it, from which system, and what you would need. Never make up accounts, contacts, metrics or results.
-- Ground answers in the playbook and skills by calling your tools. Quote thresholds as "starting assumptions until baselined".
+- You have access to all 33 project documents (Site Empire OS 01-25, Architecture, PRD, Setup Guide, Review, Build Log), all 11 skills, 12 playbook sections, automations, config files, and the verified claims library.
+- You are NOT connected to live production Salesforce, Gong, ZoomInfo, Clay or any live sending mailbox here. When asked for live production numbers, accounts or contacts, say so plainly, then explain which skill would get it, from which system, and what you would need. Never hallucinate accounts, contacts, metrics or results.
+- Ground answers in the playbook, skills, and documentation by calling your tools. Quote thresholds as "starting assumptions until baselined".
 - You can draft emails, LinkedIn notes, call openers, objection answers, account-research plans and pod-day plans. Use [placeholders] for any fact you don't have.
-- You cannot send, enroll or write anything. If asked, describe the approval gate that would apply.
-- Keep answers short and scannable. Lead with the answer. Use a table only when comparing.
+- You cannot send, enroll or write anything without human approval.
+- Keep answers short, authoritative, and scannable. Lead with the answer. Use a table only when comparing.
 - Today is ${new Date().toISOString().slice(0, 10)}.`;
 
 const sectionIndex = kit.sections.map((s) => ({ slug: s.slug, title: s.title }));
 const skillIndex = kit.skills.map((s) => ({ slug: s.slug, description: s.description }));
+const documentIndex = (kit.documents ?? []).map((d) => ({ file: d.file, title: d.title }));
+const automationIndex = (kit.automations ?? []).map((a) => ({ file: a.file, type: a.type }));
 
 export const tools = {
   list_playbook_sections: tool({
@@ -57,7 +60,7 @@ export const tools = {
     },
   }),
   search_playbook: tool({
-    description: "Search the playbook and skills for a keyword or phrase (case-insensitive). Returns matching lines with their section.",
+    description: "Search across the entire knowledge base (playbook, skills, 33 docs, automations, claims library) for a keyword or phrase.",
     inputSchema: z.object({ query: z.string().min(2) }),
     execute: async ({ query }) => {
       const q = query.toLowerCase();
@@ -68,7 +71,10 @@ export const tools = {
       for (const s of kit.skills) {
         for (const line of s.body.split("\n")) if (line.toLowerCase().includes(q)) hits.push({ where: `skill: ${s.slug}`, line: line.trim() });
       }
-      return { query, count: hits.length, hits: hits.slice(0, 25) };
+      for (const d of kit.documents ?? []) {
+        for (const line of d.content.split("\n")) if (line.toLowerCase().includes(q)) hits.push({ where: `doc: ${d.file}`, line: line.trim() });
+      }
+      return { query, count: hits.length, hits: hits.slice(0, 30) };
     },
   }),
   list_skills: tool({
@@ -90,8 +96,39 @@ export const tools = {
     inputSchema: z.object({ file: z.string() }),
     execute: async ({ file }) => {
       if (file.includes("reason")) return { file: "disqualification-reason-codes.csv", content: kit.reasonCodes };
-      const f = kit.configFiles.find((c) => c.file === file) ?? kit.configFiles.find((c) => c.file.startsWith(file.replace(/\..*$/, "")));
+      const f = getConfigFile(file);
       return f ?? { error: `No config '${file}'.`, files: kit.configFiles.map((c) => c.file) };
+    },
+  }),
+  list_documents: tool({
+    description: "List all 33 documentation files including Site Empire OS (01-25), PRD, Setup Guide, Architecture, Review, and Build Log.",
+    inputSchema: z.object({}),
+    execute: async () => documentIndex,
+  }),
+  read_document: tool({
+    description: "Read any document by filename or number (e.g. '01-intent-spec.md', '08-prd.md', '10-architecture.md', 'SETUP_GUIDE.md', 'ARCHITECTURE.md').",
+    inputSchema: z.object({ file: z.string() }),
+    execute: async ({ file }) => {
+      const doc = getDocument(file);
+      return doc ? { file: doc.file, title: doc.title, content: doc.content } : { error: `Document '${file}' not found.`, documents: documentIndex };
+    },
+  }),
+  read_claims_library: tool({
+    description: "Read the validated Loadsmart proof points, metrics (1,800+ Shippers, 4,500+ Facilities, 230k+ Carriers, 14M Docks, 11 AI Agents), and citations.",
+    inputSchema: z.object({}),
+    execute: async () => ({ claimsLibrary: kit.claimsLibrary }),
+  }),
+  list_automations: tool({
+    description: "List the production n8n workflows, Clay waterfall schemas, and Salesforce custom field SQL definitions.",
+    inputSchema: z.object({}),
+    execute: async () => automationIndex,
+  }),
+  read_automation: tool({
+    description: "Read an automation workflow JSON or SQL schema file by name (e.g. 'waterfall-schema.json', 'gtm_custom_fields.sql', n8n files).",
+    inputSchema: z.object({ file: z.string() }),
+    execute: async ({ file }) => {
+      const auto = getAutomation(file);
+      return auto ? { file: auto.file, type: auto.type, content: auto.content } : { error: `Automation '${file}' not found.`, automations: automationIndex };
     },
   }),
 };

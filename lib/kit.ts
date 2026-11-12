@@ -3,15 +3,25 @@ import data from "./generated/kit.json";
 export type Section = { slug: string; title: string; body: string };
 export type Skill = { order: number; slug: string; name: string; description: string; body: string };
 export type ConfigFile = { file: string; content: string };
+export type DocumentItem = { file: string; title: string; content: string };
+export type AutomationItem = { file: string; type: string; content: string };
+export type TemplateItem = { file: string; content: string };
 
-export const kit = data as {
+export type KitData = {
   playbook: string;
   sections: Section[];
   skills: Skill[];
   configFiles: ConfigFile[];
   agentPrompt: string;
   reasonCodes: string;
+  claudeDoc: string;
+  documents: DocumentItem[];
+  automations: AutomationItem[];
+  claimsLibrary: string;
+  templates: TemplateItem[];
 };
+
+export const kit = data as KitData;
 
 export function slugify(text: string) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -19,6 +29,27 @@ export function slugify(text: string) {
 
 export function getSkill(slug: string) {
   return kit.skills.find((s) => s.slug === slug);
+}
+
+export function getDocument(fileOrSlug: string) {
+  const norm = fileOrSlug.toLowerCase();
+  return kit.documents?.find(
+    (d) => d.file.toLowerCase() === norm || d.file.toLowerCase().includes(norm) || d.title.toLowerCase().includes(norm)
+  );
+}
+
+export function getAutomation(fileOrName: string) {
+  const norm = fileOrName.toLowerCase();
+  return kit.automations?.find(
+    (a) => a.file.toLowerCase() === norm || a.file.toLowerCase().includes(norm)
+  );
+}
+
+export function getConfigFile(filename: string) {
+  const norm = filename.toLowerCase();
+  return kit.configFiles?.find(
+    (c) => c.file.toLowerCase() === norm || c.file.toLowerCase().startsWith(norm.replace(/\..*$/, ""))
+  );
 }
 
 export const skillMeta: Record<string, { step: string; when: string }> = {

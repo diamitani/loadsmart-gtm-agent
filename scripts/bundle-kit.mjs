@@ -1,5 +1,5 @@
-// Bundles the playbook and the skill kit into one JSON file the app and the agent read.
-// Runs automatically before every build (npm "prebuild"). Edit files in /content or /kit, not the JSON.
+// Bundles the playbook, skill kit, all 25 docs, and automations into one JSON file the app and agent read.
+// Runs automatically before every build (npm "prebuild").
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
@@ -47,11 +47,78 @@ const skills = skillOrder.filter((s) => skillDirs.includes(s)).map((dir, i) => {
 const configFiles = readdirSync(join(root, "kit/config")).sort().map((f) => ({ file: f, content: read(`kit/config/${f}`) }));
 const agentPrompt = read("kit/agent/pod-copilot-system-prompt.md");
 const reasonCodes = read("kit/templates/disqualification-reason-codes.csv");
+const claudeDoc = existsSync(join(root, "kit/agent/CLAUDE.md")) ? read("kit/agent/CLAUDE.md") : "";
+
+// All docs in /docs (Site Empire OS 01-25 + PRD + Setup + Architecture + Review + Build Log + Sessions)
+const docsDir = join(root, "docs");
+const docFiles = existsSync(docsDir) ? readdirSync(docsDir).filter((f) => f.endsWith(".md")).sort() : [];
+const documents = docFiles.map((f) => {
+  const content = read(`docs/${f}`);
+  const matchTitle = content.match(/^#\s+(.+)$/m);
+  return {
+    file: f,
+    title: matchTitle ? matchTitle[1].replace(/^[0-9\.\s\-]+/, "").trim() : f.replace(/\.md$/, "").replace(/-/g, " "),
+    content,
+  };
+});
+
+const sessionsDir = join(root, "docs/sessions");
+if (existsSync(sessionsDir)) {
+  const sessionFiles = readdirSync(sessionsDir).filter((f) => f.endsWith(".md")).sort();
+  for (const f of sessionFiles) {
+    const content = read(`docs/sessions/${f}`);
+    const matchTitle = content.match(/^#\s+(.+)$/m);
+    documents.push({
+      file: `sessions/${f}`,
+      title: matchTitle ? matchTitle[1].replace(/^[0-9\.\s\-]+/, "").trim() : f.replace(/\.md$/, "").replace(/-/g, " "),
+      content,
+    });
+  }
+}
+
+// Templates (CSV schemas, disqualification codes)
+const templatesDir = join(root, "kit/templates");
+const templates = existsSync(templatesDir)
+  ? readdirSync(templatesDir).filter((f) => !f.startsWith(".")).map((f) => ({ file: f, content: read(`kit/templates/${f}`) }))
+  : [];
+
+// Automations & schemas (n8n, clay, salesforce)
+const automations = [];
+const autoBase = join(root, "automations");
+if (existsSync(autoBase)) {
+  for (const dir of ["n8n", "clay", "salesforce"]) {
+    const sub = join(autoBase, dir);
+    if (existsSync(sub)) {
+      for (const f of readdirSync(sub).filter((x) => !x.startsWith("."))) {
+        automations.push({
+          file: `${dir}/${f}`,
+          type: dir,
+          content: read(`automations/${dir}/${f}`),
+        });
+      }
+    }
+  }
+}
+
+// Claims library
+const claimsLibrary = existsSync(join(root, "knowledge/claims-library.md")) ? read("knowledge/claims-library.md") : "";
 
 const outDir = join(root, "lib/generated");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
 writeFileSync(
   join(outDir, "kit.json"),
-  JSON.stringify({ playbook, sections, skills, configFiles, agentPrompt, reasonCodes }, null, 0),
+  JSON.stringify({ 
+    playbook, 
+    sections, 
+    skills, 
+    configFiles, 
+    agentPrompt, 
+    reasonCodes, 
+    claudeDoc, 
+    documents, 
+    automations, 
+    claimsLibrary,
+    templates
+  }, null, 0),
 );
-console.log(`bundle-kit: ${sections.length} playbook sections, ${skills.length} skills, ${configFiles.length} config files`);
+console.log(`bundle-kit: ${sections.length} playbook sections, ${skills.length} skills, ${configFiles.length} config files, ${documents.length} docs, ${automations.length} automations, ${templates.length} templates`);
