@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #0b0f19;
-  --bg-card: #111827;
-  --bg-card-subtle: #1f2937;
-  --text-main: #f9fafb;
-  --text-muted: #9ca3af;
-  --text-faint: #6b7280;
-  --border-subtle: #1f2937;
-  --border-strong: #374151;
+  --bg-app: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
   --brand-blue: #2563eb;
   --brand-blue-hover: #1d4ed8;
-  --status-good: #10b981;
-  --status-warn: #f59e0b;
-  --status-bad: #ef4444;
+  --status-good: #059669;
+  --status-warn: #d97706;
+  --status-bad: #dc2626;
 }
 
 body {
@@ -24,39 +24,39 @@ body {
 }
 
 /* Tokens and utility compatibility aliases */
-.text-brand { color: #3b82f6; }
+.text-brand { color: #2563eb; }
 .bg-brand { background-color: #2563eb; }
-.bg-brand-soft { background-color: rgba(59, 130, 246, 0.12); }
-.text-ink { color: #f9fafb; }
-.text-ink-2 { color: #cbd5e1; }
-.text-muted { color: #94a3b8; }
-.bg-card { background-color: #111827; }
-.border-line { border-color: #1f2937; }
-.bg-ink { background-color: #1e293b; }
+.bg-brand-soft { background-color: rgba(37, 99, 235, 0.08); }
+.text-ink { color: #0f172a; }
+.text-ink-2 { color: #334155; }
+.text-muted { color: #64748b; }
+.bg-card { background-color: #ffffff; }
+.border-line { border-color: #e2e8f0; }
+.bg-ink { background-color: #0f172a; }
 
 .prose-doc {
-  color: #cbd5e1;
+  color: #334155;
   line-height: 1.65;
   font-size: 0.925rem;
 }
 .prose-doc h1 {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #f9fafb;
+  color: #0f172a;
   margin: 1.2rem 0 0.6rem;
 }
 .prose-doc h2 {
   font-size: 1.25rem;
   font-weight: 650;
-  color: #f9fafb;
+  color: #0f172a;
   margin: 1.4rem 0 0.5rem;
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 0.3rem;
 }
 .prose-doc h3 {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #f9fafb;
+  color: #0f172a;
   margin: 1rem 0 0.4rem;
 }
 .prose-doc p {
@@ -72,18 +72,20 @@ body {
 .prose-doc code {
   font-family: monospace;
   font-size: 0.85em;
-  background-color: #1e293b;
+  background-color: #f1f5f9;
   padding: 0.1rem 0.35rem;
   border-radius: 0.25rem;
-  color: #93c5fd;
+  color: #1d4ed8;
+  border: 1px solid #e2e8f0;
 }
 .prose-doc pre {
   background-color: #0f172a;
-  border: 1px solid #1f2937;
+  border: 1px solid #e2e8f0;
   padding: 0.8rem 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin: 0.8rem 0;
+  color: #f8fafc;
 }
 .prose-doc table {
   width: 100%;
@@ -92,13 +94,14 @@ body {
   margin: 0.8rem 0;
 }
 .prose-doc th, .prose-doc td {
-  border: 1px solid #1f2937;
-  padding: 0.4rem 0.6rem;
+  border: 1px solid #e2e8f0;
+  padding: 0.45rem 0.7rem;
   text-align: left;
 }
 .prose-doc th {
-  background-color: #1e293b;
-  color: #f9fafb;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-weight: 600;
 }
 
 /* Custom scrollbars */
@@ -107,14 +110,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: #f8fafc;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #94a3b8;
 }
 
 /* Compact markdown used inside the Pod Copilot chat (dark theme) */
