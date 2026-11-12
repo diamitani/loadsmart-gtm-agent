@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   return result.toUIMessageStreamResponse({
     onError: (error) => {
       console.error("chat error", error);
-      return "The copilot couldn't reach its model. If you run this site, check the AI Gateway or ANTHROPIC_API_KEY setting (see /api/health).";
+      return "The copilot is temporarily unavailable. Please try again in a moment.";
     },
   });
 }

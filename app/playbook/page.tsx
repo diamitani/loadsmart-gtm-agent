@@ -28,7 +28,7 @@ export default function PlaybookPage() {
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Hybrid AE/SDR Pod Playbook & Battlecards</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Authored by Patrick Diamitani (Enably / SalesGency) · As of November 2026.
+            Authored by Patrick Diamitani · As of November 2026.
           </p>
         </div>
 

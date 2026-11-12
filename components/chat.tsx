@@ -102,7 +102,7 @@ export function Chat({ initialPrompt }: { initialPrompt?: string }) {
               {status === "submitted" && <p className="text-[13px] text-muted pl-10">Thinking…</p>}
               {error && (
                 <div className="rounded-xl border border-bad/30 bg-[#fbebeb] px-4 py-3 text-[14px] text-bad">
-                  {error.message || "Something went wrong."}
+                  {"The copilot is temporarily unavailable. Please try again in a moment."}
                 </div>
               )}
               <div ref={endRef} />
