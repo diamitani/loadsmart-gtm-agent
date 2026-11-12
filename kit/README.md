@@ -2,7 +2,7 @@
 
 A ready-to-run kit for Loadsmart's AE/SDR Account Based Selling pods: one daily pipeline from signal to sequenced outreach, three products (Opendock, ShipperGuide, Loadsmart AI) kept to their own buyers, approval gates on every send and CRM write, and a dashboard that shows where the program leaks.
 
-Built with Enably (SalesGency) by Patrick Diamitani, November 2026. The full playbook (ICP, personas, messaging, cadences, KPIs, rhythm) is the companion doc.
+Built by Patrick Diamitani, November 2026. The full playbook (ICP, personas, messaging, cadences, KPIs, rhythm) is the companion doc.
 
 ## What's inside
 

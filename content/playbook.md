@@ -205,7 +205,7 @@ Recommendation: add a daily signal layer that turns the static 20-account list i
 **Signal systems built before (Patrick's prior work):**
 
 - Atlas HXM Intent-to-Outreach engine: a daily 7am n8n run that pulls ZoomInfo and Factors ABM intent from HubSpot, passes it through 8 sequential ICP filters, routes to 6 rep pods by territory, and posts qualified accounts to Clay for enrichment, with every assignment logged.
-- SalesGency Prospect Outreach pipeline: a 6-step signals-to-email workflow where research "hooks" are kept only if they trace back to evidence, and nothing sends by default.
+- Patrick Diamitani's prospect outreach pipeline: a 6-step signals-to-email workflow where research "hooks" are kept only if they trace back to evidence, and nothing sends by default.
 
 **Recommended signals for Loadsmart** (each mapped to the product it opens):
 
