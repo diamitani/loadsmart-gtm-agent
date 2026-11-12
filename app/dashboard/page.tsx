@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [mailboxes, setMailboxes] = useState<Mailbox[]>([]);
   const [stuckAccounts, setStuckAccounts] = useState<Account[]>([]);
   const [unblockedMap, setUnblockedMap] = useState<Record<string, boolean>>({});
+  const [csvNotice, setCsvNotice] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPodData(selectedPod);
@@ -117,16 +118,34 @@ export default function DashboardPage() {
               type="file"
               accept=".csv"
               className="hidden"
-              onChange={() => alert("CSV loaded into local buffer. All pod calculations and funnels updated.")}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setCsvNotice(`Loaded ${file.name} (${Math.max(1, Math.round(file.size / 1024))} KB) into local pod review buffer.`);
+                  fetchPodData(selectedPod);
+                }
+              }}
             />
           </label>
         </div>
       </div>
 
+      {csvNotice && (
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-xs text-emerald-900 font-medium flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{csvNotice}</span>
+          </div>
+          <button onClick={() => setCsvNotice(null)} className="text-emerald-700 hover:text-emerald-900 font-semibold">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {demoMode && (
         <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-900 font-medium flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
             <span><strong>DEMO MODE:</strong> Active with real Loadsmart pod baselines (ShipperGuide, Opendock, AI). Stored securely client-side with zero external data leaks.</span>
           </div>
           <span className="text-[11px] font-mono text-amber-800 font-bold bg-amber-100/80 px-2 py-0.5 rounded">

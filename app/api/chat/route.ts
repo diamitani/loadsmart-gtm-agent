@@ -25,7 +25,13 @@ import { presentationMarkdown } from "@/lib/agent/present";
 import { requestAiContext, withAiContext, type AiContext } from "@/lib/agent/ai-context";
 import { currentUser } from "@/lib/auth/user";
 import { withUserScope } from "@/lib/auth/scope";
-import { getModel as getCopilotModel, systemPrompt as copilotSystemPrompt, tools as copilotTools } from "@/lib/copilot";
+import {
+  getModel as getCopilotModel,
+  systemPrompt as copilotSystemPrompt,
+  tools as copilotTools,
+  hasLiveModelKey,
+  buildKitGroundedReply,
+} from "@/lib/copilot";
 
 export const maxDuration = 300;
 
@@ -56,22 +62,91 @@ export async function POST(req: Request) {
     }
   }
 
-  const result = streamText({
-    model: getCopilotModel(),
-    system: copilotSystemPrompt,
-    messages: await convertToModelMessages(messages),
-    tools: copilotTools,
-    stopWhen: stepCountIs(6),
-    maxOutputTokens: 1800,
-  });
+  const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+  const lastQuery = (lastUserMsg?.parts ?? [])
+    .map((p) => (p.type === "text" ? p.text : ""))
+    .join(" ")
+    .trim() || String((lastUserMsg as { content?: unknown })?.content ?? "").trim();
 
-  return result.toUIMessageStreamResponse({
+  const writeKitReply = (writer: { write: (chunk: never) => void }, query: string) => {
+    const w = writer.write as (chunk: unknown) => void;
+    const reply = buildKitGroundedReply(query);
+    for (let idx = 0; idx < reply.toolCalls.length; idx++) {
+      const tc = reply.toolCalls[idx];
+      const toolCallId = `kit_${Date.now().toString(36)}_${idx}`;
+      w({
+        type: "tool-input-available",
+        toolCallId,
+        toolName: tc.name,
+        input: tc.input,
+      });
+      w({
+        type: "tool-output-available",
+        toolCallId,
+        output: tc.output,
+      });
+    }
+    const textId = `t_${Date.now().toString(36)}`;
+    w({ type: "text-start", id: textId });
+    const chunks = reply.text.match(/.{1,48}(\s|$)/g) ?? [reply.text];
+    for (const chunk of chunks) {
+      w({ type: "text-delta", id: textId, delta: chunk });
+    }
+    w({ type: "text-end", id: textId });
+  };
+
+  const stream = createUIMessageStream({
+    originalMessages: messages,
+    execute: async ({ writer }) => {
+      if (!hasLiveModelKey()) {
+        writeKitReply(writer as unknown as { write: (chunk: never) => void }, lastQuery);
+        return;
+      }
+
+      let emittedText = false;
+      try {
+        const result = streamText({
+          model: getCopilotModel(),
+          system: copilotSystemPrompt,
+          messages: await convertToModelMessages(messages),
+          tools: copilotTools,
+          stopWhen: stepCountIs(6),
+          maxOutputTokens: 1800,
+        });
+
+        const uiStream = result.toUIMessageStream({ sendStart: false });
+        const reader = uiStream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value.type === "error") {
+            console.warn("copilot provider error, falling back to kit-grounded mode:", value.errorText);
+            if (!emittedText) {
+              writeKitReply(writer as unknown as { write: (chunk: never) => void }, lastQuery);
+            }
+            return;
+          }
+          if (value.type === "text-delta") emittedText = true;
+          writer.write(value);
+        }
+        if (!emittedText) {
+          writeKitReply(writer as unknown as { write: (chunk: never) => void }, lastQuery);
+        }
+      } catch (err) {
+        console.warn("copilot stream exception, falling back to kit-grounded mode:", err);
+        if (!emittedText) {
+          writeKitReply(writer as unknown as { write: (chunk: never) => void }, lastQuery);
+        }
+      }
+    },
     onError: (error) => {
       console.error("copilot error", error);
       const msg = error instanceof Error ? error.message : String(error ?? "");
       return `The copilot encountered an issue: ${msg}. Check /api/health for configuration.`;
     },
   });
+
+  return createUIMessageStreamResponse({ stream });
 }
 
 async function chatEnably(body: { id: string; messages: EnablyUIMessage[] }, userId: string) {

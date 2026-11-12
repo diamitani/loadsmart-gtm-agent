@@ -250,6 +250,13 @@ export function AgentWorkspace({ skillCount, docCount }: Props) {
               <h2 className="text-[14px] font-bold text-slate-900">Connected Resources</h2>
               <div className="space-y-2 text-[13px]">
                 <Link
+                  href="/playbook"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-medium text-slate-800 hover:border-blue-300 transition-colors"
+                >
+                  <span>ABM Playbook (ICPs, Personas &amp; Deck)</span>
+                  <ArrowRight className="size-3.5 text-slate-400" />
+                </Link>
+                <Link
                   href="/automations"
                   className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-medium text-slate-800 hover:border-blue-300 transition-colors"
                 >

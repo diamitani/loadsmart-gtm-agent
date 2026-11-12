@@ -130,18 +130,27 @@ export default function HomePage() {
 
       {/* Next */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 py-20">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Link href="/presentation" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
             <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">01 · Presentation</p>
             <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Case Deck</p>
-            <p className="mt-1.5 text-[14px] text-slate-600">Seven answers in presentation slides.</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Seven answers &amp; ABM highlights in slides.</p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
               Open <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </Link>
 
+          <Link href="/playbook" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">02 · Playbook</p>
+            <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">ABM Playbook</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">ICPs, buyer persona tables, cadences &amp; KPIs.</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
+              Open Deck <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </Link>
+
           <Link href="/automations" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">02 · Automations</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">03 · Automations</p>
             <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">6-Step n8n Engine</p>
             <p className="mt-1.5 text-[14px] text-slate-600">Loadsmart stack workflow JSON + AI setup prompt.</p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
@@ -150,16 +159,16 @@ export default function HomePage() {
           </Link>
 
           <Link href="/skills" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">03 · Skills</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">04 · Skills</p>
             <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Skills Marketplace</p>
-            <p className="mt-1.5 text-[14px] text-slate-600">Portable pod & prospecting skills as .zip bundles.</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Portable pod &amp; prospecting skills as .zip bundles.</p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
               Browse <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </Link>
 
           <Link href="/courses" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
-            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">04 · Academy</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">05 · Academy</p>
             <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Claude Code Courses</p>
             <p className="mt-1.5 text-[14px] text-slate-600">Harness Mastery &amp; Claude for GTM for reps.</p>
             <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">

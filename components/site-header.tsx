@@ -7,10 +7,10 @@ import { Menu, X } from "lucide-react";
 import { LoadsmartLogo } from "./loadsmart-logo";
 
 const links = [
-  { href: "/", label: "Home" },
   { href: "/presentation", label: "Presentation" },
-  { href: "/skills", label: "Skills" },
+  { href: "/playbook", label: "Playbook" },
   { href: "/automations", label: "Automations" },
+  { href: "/skills", label: "Skills" },
   { href: "/courses", label: "Courses" },
   { href: "/documents", label: "Documents" },
 ];

@@ -24,6 +24,10 @@ const toolLabels: Record<string, string> = {
   read_claims_library: "Read claims",
   list_automations: "Listed automations",
   read_automation: "Read automation",
+  prospect_accounts: "Scored ICP",
+  draft_outbound_sequence: "Drafted sequence",
+  diagnose_pod_leak: "Diagnosed pod leak",
+  verify_claim: "Verified claim",
 };
 
 type ToolPart = { type: string; state?: string; input?: Record<string, unknown> };
