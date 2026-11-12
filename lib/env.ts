@@ -13,14 +13,52 @@ export function env() {
   // ENABLY_AI_GATEWAY_OIDC=1 uses AI Gateway via the project's OIDC token — no pasted key needed.
   const gatewayOidc = !!e.VERCEL && e.ENABLY_AI_GATEWAY_OIDC === "1";
   const gatewayKey = e.AI_GATEWAY_API_KEY || e.VERCEL_OIDC_TOKEN || (gatewayOidc ? "oidc" : "");
+  const geminiKey = e.GEMINI_API_KEY || e.GOOGLE_GENERATIVE_AI_API_KEY || e.GOOGLE_API_KEY;
   const anthropicKey = e.ANTHROPIC_API_KEY;
-  const provider: "gateway" | "anthropic" | "demo" = gatewayKey ? "gateway" : anthropicKey ? "anthropic" : "demo";
+  const openaiKey = e.OPENAI_API_KEY;
+
+  const explicitProvider = (e.ENABLY_PROVIDER || "").toLowerCase();
+  const provider: "gemini" | "gateway" | "anthropic" | "openai" | "demo" =
+    explicitProvider === "gemini" && geminiKey
+      ? "gemini"
+      : explicitProvider === "gateway" && gatewayKey
+      ? "gateway"
+      : explicitProvider === "anthropic" && anthropicKey
+      ? "anthropic"
+      : explicitProvider === "openai" && openaiKey
+      ? "openai"
+      : geminiKey
+      ? "gemini"
+      : gatewayKey
+      ? "gateway"
+      : anthropicKey
+      ? "anthropic"
+      : openaiKey
+      ? "openai"
+      : "demo";
+
+  const defaultMainModel =
+    provider === "gemini"
+      ? "gemini-2.5-pro"
+      : provider === "anthropic"
+      ? "claude-sonnet-5-5"
+      : provider === "openai"
+      ? "gpt-5.5"
+      : "nvidia/nemotron-3-ultra-550b-a55b";
+
+  const defaultFastModel =
+    provider === "gemini"
+      ? "gemini-2.5-flash"
+      : provider === "anthropic"
+      ? "claude-haiku-5-5"
+      : provider === "openai"
+      ? "gpt-5.4-mini"
+      : "meta/llama-4-scout";
+
   return {
     provider,
-    // Gateway defaults are free-tier models verified for text + tool calling + structured output
-    // (GET /api/health?probe=agent). Set ENABLY_MODEL=anthropic/claude-sonnet-5.5 once Gateway credits are added.
-    model: e.ENABLY_MODEL || (provider === "anthropic" ? "claude-sonnet-5-5" : "nvidia/nemotron-3-ultra-550b-a55b"),
-    fastModel: e.ENABLY_FAST_MODEL || (provider === "anthropic" ? "claude-haiku-5-5" : "meta/llama-4-scout"),
+    model: e.ENABLY_MODEL || defaultMainModel,
+    fastModel: e.ENABLY_FAST_MODEL || defaultFastModel,
     workspaceId: e.ENABLY_WORKSPACE_ID || "default",
     accessCode: e.ENABLY_ACCESS_CODE || "",
     supabaseUrl: e.SUPABASE_URL || e.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -41,8 +79,25 @@ export type Env = ReturnType<typeof env>;
 /** Safe, secret-free summary for the Settings page. */
 export function integrationStatus() {
   const e = env();
+  const providerLabel =
+    e.provider === "gemini"
+      ? "Google Gemini"
+      : e.provider === "gateway"
+      ? "Vercel AI Gateway"
+      : e.provider === "openai"
+      ? "OpenAI"
+      : e.provider === "anthropic"
+      ? "Anthropic"
+      : "Demo mode";
+
   return [
-    { id: "model", label: "AI model", ok: e.provider !== "demo", detail: e.provider === "demo" ? "Demo mode — template assets, no model calls" : `${e.provider === "gateway" ? "Vercel AI Gateway" : "Anthropic"} · ${e.model}`, env: "AI_GATEWAY_API_KEY or ANTHROPIC_API_KEY" },
+    {
+      id: "model",
+      label: "AI model",
+      ok: e.provider !== "demo",
+      detail: e.provider === "demo" ? "Demo mode — template assets, no model calls" : `${providerLabel} · ${e.model}`,
+      env: "GEMINI_API_KEY, AI_GATEWAY_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY",
+    },
     { id: "db", label: "Database", ok: !!(e.supabaseUrl && e.supabaseServiceKey), detail: e.supabaseUrl ? "Supabase Postgres" : "Local file store (.data/enably.json)", env: "SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY" },
     { id: "langsmith", label: "LangSmith tracing & evals", ok: e.langsmithEnabled, detail: e.langsmithEnabled ? `Project: ${e.langsmithProject}` : "Off — traces print nowhere", env: "LANGSMITH_API_KEY (+ LANGSMITH_PROJECT)" },
     { id: "durable", label: "Cloudflare durable agent", ok: !!e.durableUrl, detail: e.durableUrl ? "Long runs + approvals hand off to Durable Objects" : "Off — runs execute inline", env: "CF_AGENT_URL + CF_AGENT_SECRET" },
@@ -58,7 +113,7 @@ export function integrationStatus() {
 function billingStatusItems() {
   const b = billingConfig();
   return [
-    { id: "byok", label: "Bring your own key", ok: b.byok, detail: b.byok ? "Users can add their own Anthropic, OpenAI or AI Gateway key (AES-256-GCM at rest)" : "Off — set a 32-byte BYOK_ENCRYPTION_KEY", env: "BYOK_ENCRYPTION_KEY" },
+    { id: "byok", label: "Bring your own key", ok: b.byok, detail: b.byok ? "Users can add their own Gemini, Anthropic, OpenAI or AI Gateway key (AES-256-GCM at rest)" : "Off — set a 32-byte BYOK_ENCRYPTION_KEY", env: "BYOK_ENCRYPTION_KEY" },
     { id: "credits", label: "Credits metering", ok: b.metered, detail: b.metered ? `On · ${b.creditsPerCall} credit(s) per AI call${b.freeCredits ? ` · ${b.freeCredits} free on signup` : ""}` : b.accounts ? "Off (ENABLY_BILLING=off) — house key is free for everyone with access" : "Off — needs sign-in (Supabase Auth) for user accounts", env: "ENABLY_BILLING, ENABLY_CREDITS_PER_CALL, ENABLY_FREE_CREDITS" },
     { id: "stripe", label: "Credit purchases (Stripe)", ok: b.stripe, detail: b.stripe ? "Checkout + verified webhook at /api/billing/webhook" : b.stripeKeysPresent ? "Keys set, but paused until Supabase is connected (credits must be durable)" : "Off — add Stripe keys", env: "STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET" },
   ];

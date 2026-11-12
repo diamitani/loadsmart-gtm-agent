@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loadsmart Pod Dashboard</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --muted:#5b6675; --line:#dfe3e8; --accent:#1f6feb; --good:#1a7f4b; --warn:#b26a00; --bad:#b42318; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161c; --card:#1b212a; --ink:#e8ecf1; --muted:#9aa5b4; --line:#2c3541; --accent:#5b9dff; --good:#4cc38a; --warn:#e0a03a; --bad:#f07a6e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 24px; background:var(--card); border-bottom:1px solid var(--line); display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  h1 { font-size:18px; margin:0; }
+  h2 { font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  main { padding:20px 24px; max-width:1200px; margin:0 auto; }
+  .banner { display:none; background:#fff4d6; color:#5c4300; border:1px solid #e6c768; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-weight:600; }
+  .banner.on { display:block; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  button, label.btn { font:inherit; padding:7px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); cursor:pointer; }
+  button:hover, label.btn:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  input[type=file] { display:none; }
+  select { font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); }
+  .status { color:var(--muted); font-size:12px; }
+  .grid { display:grid; gap:16px; }
+  .tiles { grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); margin-bottom:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tile .v { font-size:26px; font-weight:700; }
+  .tile .l { color:var(--muted); font-size:12px; }
+  .tile .n { color:var(--muted); font-size:11px; margin-top:2px; }
+  .tile .flag { color:var(--warn); font-size:11px; }
+  .two { grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); margin-bottom:16px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; }
+  .empty { color:var(--muted); padding:18px 0; text-align:center; }
+  .bar-row { display:flex; align-items:center; gap:8px; margin:5px 0; }
+  .bar-label { width:120px; font-size:12px; color:var(--muted); }
+  .bar-track { flex:1; background:var(--line); border-radius:4px; height:18px; position:relative; overflow:hidden; }
+  .bar-fill { background:var(--accent); height:100%; }
+  .bar-val { width:60px; text-align:right; font-variant-numeric:tabular-nums; }
+  .err { color:var(--bad); font-size:12px; margin-top:6px; }
+  details { margin-top:8px; color:var(--muted); font-size:12px; }
+  code { background:var(--line); padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Loadsmart pod dashboard</h1>
+  <div class="controls">
+    <label class="btn">Accounts CSV<input id="f-accounts" type="file" accept=".csv"></label>
+    <label class="btn">Emails CSV<input id="f-emails" type="file" accept=".csv"></label>
+    <label class="btn">Runs CSV<input id="f-runs" type="file" accept=".csv"></label>
+    <select id="podSel" aria-label="Pod filter"><option value="">All pods</option></select>
+    <button id="demoBtn">Show simulated demo</button>
+    <button id="clearBtn">Clear</button>
+  </div>
+</header>
+<main>
+  <div id="banner" class="banner">SIMULATED DATA. These rows are fake and exist only to show the layout. Import your own CSVs to see real numbers.</div>
+  <div class="status" id="status">No data loaded. Import your CSVs (templates are in the templates folder) or click "Show simulated demo". Files stay in this browser and are never uploaded.</div>
+  <div id="errs" class="err"></div>
+
+  <div class="grid tiles" id="tiles" style="margin-top:14px"></div>
+
+  <div class="grid two">
+    <div class="card"><h2>Funnel (accounts that reached each state)</h2><div id="funnel"></div></div>
+    <div class="card"><h2>Parked and disqualified</h2><div id="parked"></div></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card"><h2>Stuck accounts</h2><div id="stuck"></div></div>
+    <div class="card"><h2>Run log</h2><div id="runs"></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px"><h2>Mailbox health (needs a mailbox column in emails.csv)</h2><div id="mailboxes"></div></div>
+
+  <details>
+    <summary>How to read this</summary>
+    <p>Rates always show the numerator and denominator. Under 30 events, the tile says "small sample". Missing columns show "no data", never zero. Expected headers: accounts.csv <code>account_id, account_name, pod, product, state, disqualify_reason, signal_date, days_in_state</code>; emails.csv <code>contact_id, account_id, pod, persona, step, sent_date, delivered, bounced, unsubscribed, replied, positive_reply, meeting_booked, meeting_held, opportunity_created, mailbox</code> (mailbox is optional; flags and 1/0, true/false or yes/no); runs.csv <code>date, pod, mode, step, count, status, note</code>.</p>
+  </details>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var STATES = ["nominated","accepted","signal_ready","enriched","researched","email_approved","in_sequence","engaged","qualified","opportunity"];
+  var STUCK_DAYS = 14;
+  var data = { accounts: [], emails: [], runs: [] };
+  var demo = false;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+
+  function parseCSV(text) {
+    var rows = [], row = [], cur = "", q = false, i, c;
+    text = text.replace(/^﻿/, "");
+    for (i = 0; i < text.length; i++) {
+      c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else { q = false; } }
+        else { cur += c; }
+      } else if (c === '"') { q = true; }
+      else if (c === ",") { row.push(cur); cur = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cur); cur = "";
+        if (row.length > 1 || row[0] !== "") rows.push(row);
+        row = [];
+      } else { cur += c; }
+    }
+    if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+    if (!rows.length) return [];
+    var head = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+    return rows.slice(1).map(function (r) {
+      var o = {}; head.forEach(function (h, k) { o[h] = (r[k] || "").trim(); }); return o;
+    });
+  }
+
+  function truthy(v) { v = String(v == null ? "" : v).trim().toLowerCase(); return v === "1" || v === "true" || v === "yes" || v === "y"; }
+  function hasCol(rows, col) { return rows.length > 0 && Object.prototype.hasOwnProperty.call(rows[0], col); }
+
+  function readFile(input, key, required) {
+    input.addEventListener("change", function () {
+      var f = input.files && input.files[0];
+      if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        var rows = parseCSV(String(rd.result));
+        var miss = required.filter(function (c) { return !hasCol(rows, c); });
+        if (!rows.length) { $("errs").textContent = f.name + ": no data rows found."; return; }
+        if (miss.length) { $("errs").textContent = f.name + ": missing columns " + miss.join(", ") + ". Use the template headers."; return; }
+        $("errs").textContent = "";
+        demo = false;
+        data[key] = rows;
+        render();
+      };
+      rd.onerror = function () { $("errs").textContent = "Could not read " + f.name; };
+      rd.readAsText(f);
+      input.value = "";
+    });
+  }
+  readFile($("f-accounts"), "accounts", ["account_id", "state"]);
+  readFile($("f-emails"), "emails", ["contact_id"]);
+  readFile($("f-runs"), "runs", ["date", "step"]);
+
+  function podFiltered(rows) {
+    var p = $("podSel").value;
+    if (!p) return rows;
+    return rows.filter(function (r) { return r.pod === p; });
+  }
+
+  function refreshPods() {
+    var set = {}, sel = $("podSel"), cur = sel.value;
+    ["accounts", "emails", "runs"].forEach(function (k) {
+      data[k].forEach(function (r) { if (r.pod) set[r.pod] = 1; });
+    });
+    var names = Object.keys(set).sort();
+    sel.innerHTML = '<option value="">All pods</option>' + names.map(function (n) { return '<option>' + esc(n) + '</option>'; }).join("");
+    if (names.indexOf(cur) >= 0) sel.value = cur;
+  }
+
+  function rate(num, den) {
+    if (!den) return { v: "no data", n: "0 events", flag: "" };
+    var pct = (100 * num / den);
+    return { v: pct.toFixed(1) + "%", n: num + " of " + den, flag: den < 30 ? "small sample" : "" };
+  }
+
+  function tile(label, o) {
+    return '<div class="card tile"><div class="v">' + esc(o.v) + '</div><div class="l">' + esc(label) + '</div><div class="n">' + esc(o.n || "") + '</div>' + (o.flag ? '<div class="flag">' + esc(o.flag) + '</div>' : '') + '</div>';
+  }
+
+  function render() {
+    refreshPods();
+    $("banner").className = demo ? "banner on" : "banner";
+    var acc = podFiltered(data.accounts), em = podFiltered(data.emails), runs = podFiltered(data.runs);
+    var loaded = data.accounts.length + data.emails.length + data.runs.length;
+    $("status").textContent = loaded
+      ? (demo ? "Showing SIMULATED demo data." : "Loaded: " + data.accounts.length + " account rows, " + data.emails.length + " email rows, " + data.runs.length + " run rows. Data stays in this browser.")
+      : 'No data loaded. Import your CSVs (templates are in the templates folder) or click "Show simulated demo". Files stay in this browser and are never uploaded.';
+
+    // tiles
+    var t = [];
+    if (acc.length) {
+      var nom = acc.length;
+      var dq = acc.filter(function (r) { return r.state === "disqualified"; }).length;
+      var inSeq = acc.filter(function (r) { var i = STATES.indexOf(r.state); return i >= STATES.indexOf("in_sequence"); }).length;
+      t.push(tile("Nominated accounts", { v: String(nom), n: "rows in accounts.csv", flag: "" }));
+      t.push(tile("Pod acceptance", rate(nom - dq, nom)));
+      t.push(tile("Accounts in sequence or beyond", { v: String(inSeq), n: "of " + nom, flag: "" }));
+    } else {
+      t.push(tile("Nominated accounts", { v: "no data", n: "import accounts.csv" }));
+    }
+    if (em.length) {
+      var delivered = 0, bounced = 0, replied = 0, pos = 0, booked = 0, held = 0, opp = 0, unsub = 0;
+      var cols = ["delivered","bounced","replied","positive_reply","meeting_booked","meeting_held","opportunity_created","unsubscribed"];
+      var has = {}; cols.forEach(function (c) { has[c] = hasCol(em, c); });
+      em.forEach(function (r) {
+        if (truthy(r.delivered)) delivered++;
+        if (truthy(r.bounced)) bounced++;
+        if (truthy(r.replied)) replied++;
+        if (truthy(r.positive_reply)) pos++;
+        if (truthy(r.meeting_booked)) booked++;
+        if (truthy(r.meeting_held)) held++;
+        if (truthy(r.opportunity_created)) opp++;
+        if (truthy(r.unsubscribed)) unsub++;
+      });
+      t.push(tile("Delivered", has.delivered ? { v: String(delivered), n: "of " + em.length + " rows", flag: "" } : { v: "no data", n: "column missing" }));
+      t.push(tile("Bounce rate", has.bounced && has.delivered ? rate(bounced, delivered + bounced) : { v: "no data", n: "" }));
+      t.push(tile("Reply rate", has.replied && has.delivered ? rate(replied, delivered) : { v: "no data", n: "" }));
+      t.push(tile("Positive replies", has.positive_reply && has.replied ? rate(pos, replied) : { v: "no data", n: "" }));
+      t.push(tile("Meetings booked", has.meeting_booked ? { v: String(booked), n: "held " + (has.meeting_held ? held : "no data"), flag: "" } : { v: "no data", n: "" }));
+      t.push(tile("Meeting to opportunity", has.opportunity_created && has.meeting_held ? rate(opp, held) : { v: "no data", n: "" }));
+    } else {
+      t.push(tile("Email performance", { v: "no data", n: "import emails.csv" }));
+    }
+    $("tiles").innerHTML = t.join("");
+
+    // funnel
+    if (acc.length) {
+      var counts = STATES.map(function (s, idx) {
+        return acc.filter(function (r) { var i = STATES.indexOf(r.state); return i >= idx; }).length;
+      });
+      var max = Math.max.apply(null, counts.concat([1]));
+      $("funnel").innerHTML = STATES.map(function (s, i) {
+        var w = (100 * counts[i] / max).toFixed(1);
+        return '<div class="bar-row"><div class="bar-label">' + esc(s.replace(/_/g, " ")) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + w + '%"></div></div><div class="bar-val">' + counts[i] + '</div></div>';
+      }).join("");
+
+      // parked and disqualified
+      var reasons = {};
+      acc.filter(function (r) { return r.state === "parked" || r.state === "disqualified"; }).forEach(function (r) {
+        var k = r.state + ": " + (r.disqualify_reason || "no reason logged");
+        reasons[k] = (reasons[k] || 0) + 1;
+      });
+      var keys = Object.keys(reasons).sort(function (a, b) { return reasons[b] - reasons[a]; });
+      $("parked").innerHTML = keys.length
+        ? '<table><tr><th>State and reason</th><th>Count</th></tr>' + keys.map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + reasons[k] + '</td></tr>'; }).join("") + '</table>'
+        : '<div class="empty">None in this view.</div>';
+
+      // stuck
+      var stuck = acc.filter(function (r) { return r.state !== "disqualified" && r.state !== "opportunity" && Number(r.days_in_state) >= STUCK_DAYS; })
+        .sort(function (a, b) { return Number(b.days_in_state) - Number(a.days_in_state); }).slice(0, 12);
+      var anyDays = hasCol(acc, "days_in_state");
+      $("stuck").innerHTML = !anyDays ? '<div class="empty">no data (days_in_state column missing)</div>'
+        : stuck.length ? '<table><tr><th>Account</th><th>State</th><th>Days</th></tr>' + stuck.map(function (r) { return '<tr><td>' + esc(r.account_name || r.account_id) + '</td><td>' + esc(r.state) + '</td><td>' + esc(r.days_in_state) + '</td></tr>'; }).join("") + '</table>'
+        : '<div class="empty">Nothing older than ' + STUCK_DAYS + ' days.</div>';
+    } else {
+      $("funnel").innerHTML = '<div class="empty">no data</div>';
+      $("parked").innerHTML = '<div class="empty">no data</div>';
+      $("stuck").innerHTML = '<div class="empty">no data</div>';
+    }
+
+    // mailbox health
+    if (em.length && hasCol(em, "mailbox")) {
+      var mb = {};
+      em.forEach(function (r) {
+        var k = r.mailbox || "(blank)";
+        var o = mb[k] || (mb[k] = { rows: 0, del: 0, bnc: 0, rep: 0, uns: 0 });
+        o.rows++;
+        if (truthy(r.delivered)) o.del++;
+        if (truthy(r.bounced)) o.bnc++;
+        if (truthy(r.replied)) o.rep++;
+        if (truthy(r.unsubscribed)) o.uns++;
+      });
+      var names = Object.keys(mb).sort();
+      $("mailboxes").innerHTML = '<table><tr><th>Mailbox</th><th>Sends</th><th>Bounce rate</th><th>Replies</th><th>Unsubscribes</th><th>Check</th></tr>' + names.map(function (k) {
+        var o = mb[k], den = o.del + o.bnc, br = den ? (100 * o.bnc / den) : null;
+        var note = den < 30 ? "small sample" : (br >= 2 ? "pause and check" : "ok");
+        return '<tr><td>' + esc(k) + '</td><td>' + o.rows + '</td><td>' + (br === null ? "no data" : br.toFixed(1) + "% (" + o.bnc + " of " + den + ")") + '</td><td>' + o.rep + '</td><td>' + o.uns + '</td><td>' + note + '</td></tr>';
+      }).join("") + '</table>';
+    } else {
+      $("mailboxes").innerHTML = '<div class="empty">no data (add a mailbox column to emails.csv)</div>';
+    }
+
+    // runs
+    $("runs").innerHTML = runs.length
+      ? '<table><tr><th>Date</th><th>Pod</th><th>Mode</th><th>Step</th><th>Count</th><th>Status</th></tr>' + runs.slice(-12).reverse().map(function (r) {
+          return '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.pod) + '</td><td>' + esc(r.mode) + '</td><td>' + esc(r.step) + '</td><td>' + esc(r.count) + '</td><td>' + esc(r.status) + '</td></tr>';
+        }).join("") + '</table>'
+      : '<div class="empty">no data</div>';
+  }
+
+  // Deterministic SIMULATED data
+  function seeded(seed) { var s = seed; return function () { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
+  function makeDemo() {
+    var rnd = seeded(42), pods = ["Pod A (simulated)", "Pod B (simulated)"], products = ["Opendock", "ShipperGuide", "Loadsmart AI"];
+    var accounts = [], emails = [], runs = [];
+    var reasonsList = ["wrong segment", "existing customer", "no relevant freight", "open opportunity"];
+    pods.forEach(function (pod, pi) {
+      for (var i = 1; i <= 20; i++) {
+        var r = rnd(), state;
+        if (r < 0.10) state = "disqualified"; else if (r < 0.18) state = "parked";
+        else state = STATES[Math.floor(rnd() * STATES.length)];
+        var id = "SIM-" + (pi + 1) + "-" + (i < 10 ? "0" + i : i);
+        accounts.push({ account_id: id, account_name: "Simulated Account " + (pi * 20 + i), pod: pod, product: products[Math.floor(rnd() * 3)], state: state,
+          disqualify_reason: state === "disqualified" ? reasonsList[Math.floor(rnd() * reasonsList.length)] : (state === "parked" ? "unverified contacts" : ""),
+          signal_date: "", days_in_state: String(Math.floor(rnd() * 30)) });
+        if (STATES.indexOf(state) >= STATES.indexOf("in_sequence")) {
+          for (var c = 1; c <= 2; c++) {
+            var d = rnd() > 0.05, b = !d, rep = d && rnd() < 0.10, p = rep && rnd() < 0.5, mb = p && rnd() < 0.6, mh = mb && rnd() < 0.8, op = mh && rnd() < 0.4;
+            emails.push({ mailbox: "box" + (1 + Math.floor(rnd() * 5)) + " (simulated)", contact_id: id + "-C" + c, account_id: id, pod: pod, persona: "simulated", step: "1", sent_date: "", delivered: d ? "1" : "0", bounced: b ? "1" : "0", unsubscribed: "0", replied: rep ? "1" : "0", positive_reply: p ? "1" : "0", meeting_booked: mb ? "1" : "0", meeting_held: mh ? "1" : "0", opportunity_created: op ? "1" : "0" });
+          }
+        }
+      }
+      ["nominate", "enrich", "email draft", "preflight"].forEach(function (s, k) {
+        runs.push({ date: "SIMULATED day " + (k + 1), pod: pod, mode: "dry_run", step: s, count: String(10 + Math.floor(rnd() * 10)), status: "ok", note: "" });
+      });
+    });
+    return { accounts: accounts, emails: emails, runs: runs };
+  }
+
+  $("demoBtn").addEventListener("click", function () { data = makeDemo(); demo = true; $("errs").textContent = ""; render(); });
+  $("clearBtn").addEventListener("click", function () { data = { accounts: [], emails: [], runs: [] }; demo = false; $("errs").textContent = ""; render(); });
+  $("podSel").addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>

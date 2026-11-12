@@ -15,3 +15,8 @@ subagents:
   # Conversational (tool-using) specialists — run in chat mode, not as build nodes:
   sdr-assistant:        { skill: skills/sdr-assistant,      tools: [research_web, prospect_leads, enrich_contact, verify_email, send_email, enroll_contacts_in_sequence, upsert_crm_record, log_crm_activity, find_crm_records, generate_personalization_snippets] }
   enablement-assistant: { skill: skills/sales-enablement,   tools: [log_activity, activity_summary, generate_template] }
+  clay-architect:       { skill: skills/clay-gtm-architect, tools: [research_web, prospect_leads, enrich_contact, verify_email] }
+  gtm-wizard:           { skill: skills/gtm-wizard,         tools: [search_knowledge, read_document] }
+  tech-stack-advisor:   { skill: skills/tech-stack-architect, tools: [search_knowledge] }
+  sop-builder:          { skill: skills/sop-architect,      tools: [search_knowledge] }
+  pal-reasoner:         { skill: skills/pal-stages,         tools: [search_knowledge, read_document] }

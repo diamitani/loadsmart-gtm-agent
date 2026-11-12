@@ -12,13 +12,19 @@ const API = "https://api.stripe.com/v1";
 
 export function checkoutForm(pack: CreditPack, accountId: string, origin: string, email?: string | null): URLSearchParams {
   const f = new URLSearchParams();
-  f.set("mode", "payment");
+  const isSub = pack.mode === "subscription" || pack.interval === "month" || pack.interval === "year";
+  f.set("mode", isSub ? "subscription" : "payment");
   f.set("success_url", `${origin}/app/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
   f.set("cancel_url", `${origin}/app/billing?checkout=cancelled`);
   f.set("client_reference_id", accountId);
   f.set("metadata[account_id]", accountId);
   f.set("metadata[pack_id]", pack.id);
   f.set("metadata[credits]", String(pack.credits));
+  if (isSub) {
+    f.set("subscription_data[metadata][account_id]", accountId);
+    f.set("subscription_data[metadata][pack_id]", pack.id);
+    f.set("subscription_data[metadata][credits]", String(pack.credits));
+  }
   if (email) f.set("customer_email", email);
   f.set("line_items[0][quantity]", "1");
   if (pack.priceId) {
@@ -27,6 +33,9 @@ export function checkoutForm(pack: CreditPack, accountId: string, origin: string
     f.set("line_items[0][price_data][currency]", pack.currency);
     f.set("line_items[0][price_data][unit_amount]", String(pack.amountCents));
     f.set("line_items[0][price_data][product_data][name]", `Enably credits — ${pack.label} (${pack.credits})`);
+    if (isSub) {
+      f.set("line_items[0][price_data][recurring][interval]", pack.interval === "year" ? "year" : "month");
+    }
   }
   return f;
 }
@@ -68,20 +77,67 @@ export function verifyStripeSignature(payload: string, header: string | null, se
 export interface CheckoutSessionLike {
   id: string;
   payment_status?: string;
+  status?: string;
+  paid?: boolean;
+  billing_reason?: string | null;
   client_reference_id?: string | null;
   metadata?: Record<string, string> | null;
   customer_details?: { email?: string | null } | null;
+  subscription_details?: { metadata?: Record<string, string> | null } | null;
+  lines?: {
+    data?: Array<{
+      price?: { id?: string };
+      metadata?: Record<string, string> | null;
+    }>;
+  };
 }
 
-/** Decide what a verified event grants. Pure, so it is unit-tested. */
-export function creditsFromEvent(event: { type: string; data: { object: CheckoutSessionLike } }, packs: CreditPack[]): { accountId: string; credits: number; ref: string; packId: string } | null {
-  if (event.type !== "checkout.session.completed" && event.type !== "checkout.session.async_payment_succeeded") return null;
+/** Decide what a verified event grants. Handles one-time checkout and recurring subscription cycles. Pure, so it is unit-tested. */
+export function creditsFromEvent(
+  event: { type: string; data: { object: CheckoutSessionLike } },
+  packs: CreditPack[],
+): { accountId: string; credits: number; ref: string; packId: string } | null {
+  const isCheckout = event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded";
+  const isInvoicePaid = event.type === "invoice.paid" || event.type === "invoice.payment_succeeded";
+
+  if (!isCheckout && !isInvoicePaid) return null;
+
   const s = event.data.object;
-  if (s.payment_status !== "paid") return null; // async methods grant on async_payment_succeeded
-  const accountId = s.metadata?.account_id || s.client_reference_id || "";
-  const packId = s.metadata?.pack_id || "";
-  const pack = packs.find((p) => p.id === packId);
-  const credits = pack ? pack.credits : Number(s.metadata?.credits);
-  if (!accountId || !Number.isInteger(credits) || credits <= 0) return null;
-  return { accountId, credits, ref: `stripe:${s.id}`, packId };
+
+  if (isCheckout) {
+    if (s.payment_status !== "paid") return null; // async methods grant on async_payment_succeeded
+    const accountId = s.metadata?.account_id || s.client_reference_id || "";
+    const packId = s.metadata?.pack_id || "";
+    const pack = packs.find((p) => p.id === packId);
+    const credits = pack ? pack.credits : Number(s.metadata?.credits);
+    if (!accountId || !Number.isInteger(credits) || credits <= 0) return null;
+    return { accountId, credits, ref: `stripe:${s.id}`, packId };
+  }
+
+  // Recurring subscription cycle renewals from invoice
+  if (isInvoicePaid) {
+    if (s.paid === false || s.status === "uncollectible") return null;
+    // Initial subscription checkout is already credited via checkout.session.completed
+    if (s.billing_reason === "subscription_create") return null;
+
+    const accountId =
+      s.subscription_details?.metadata?.account_id ||
+      s.metadata?.account_id ||
+      s.lines?.data?.[0]?.metadata?.account_id ||
+      s.client_reference_id ||
+      "";
+    const packId =
+      s.subscription_details?.metadata?.pack_id ||
+      s.metadata?.pack_id ||
+      s.lines?.data?.[0]?.metadata?.pack_id ||
+      "";
+    const linePriceId = s.lines?.data?.[0]?.price?.id;
+    const pack = packs.find((p) => p.id === packId || (linePriceId && p.priceId === linePriceId));
+    const credits = pack ? pack.credits : Number(s.metadata?.credits || s.subscription_details?.metadata?.credits);
+
+    if (!accountId || !Number.isInteger(credits) || credits <= 0) return null;
+    return { accountId, credits, ref: `stripe:inv_${s.id}`, packId: pack?.id || packId };
+  }
+
+  return null;
 }

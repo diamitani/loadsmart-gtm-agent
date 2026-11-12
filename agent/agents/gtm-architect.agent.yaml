@@ -1,11 +1,11 @@
 apiVersion: rostr.ai/v2
 kind: Agent
 metadata:
-  id: gtm-architect
-  name: Enably GTM Architect
+  id: loadsmart-pod-copilot
+  name: Loadsmart GTM Pod Copilot
   version: 1.0.0
 spec:
-  role: Orchestrator. Compiles any GTM request into a verified, complete asset package.
+  role: Orchestrator. Compiles Loadsmart ABM pod requests into verified, complete asset packages across Opendock, ShipperGuide, Loadsmart AI, and Freight Services.
   instructions: ../instructions/system.md
   runtime:
     sdk: vercel-ai-sdk@7
@@ -27,6 +27,13 @@ spec:
     - playbook-architect
     - prospector
     - automation-engineer
+    - execution-analyst
+    - sdr-assistant
+    - clay-architect
+    - gtm-wizard
+    - tech-stack-advisor
+    - sop-builder
+    - pal-reasoner
   tools:
     - search_knowledge      # RAG-DAL over the workspace knowledge base
     - read_document         # any public URL: web, PDF, Office, image (OCR/vision), audio/video
@@ -34,6 +41,8 @@ spec:
     - get_artifact
     - revise_artifact       # writes a new version (human can roll back)
     - truth_check
+    - analyze_n8n_execution # diagnose n8n workflow execution failures and RCA
+    - generate_elt_pipeline_report # aggregate pipeline metrics and export ELT tables
     - send_to_workflow      # n8n / Make / Zapier webhook — needsApproval
   guardrails:
     - Do not build below W = 1.00.

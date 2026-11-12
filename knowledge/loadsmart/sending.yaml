@@ -1,0 +1,51 @@
+# Sending infrastructure and dialer. Enforced by the n8n/Make workflows, not by the model.
+# Values marked VERIFY need confirming with the deliverability owner and the vendors.
+
+mailboxes:
+  per_rep: 5
+  domains: "secondary sending domains only - never the primary loadsmart.com domain for cold volume"
+  mailboxes_per_domain: 3              # 2-3 typical
+  auth_required: [SPF, DKIM, DMARC]
+  tracking: "custom tracking domain, or open tracking off"
+  warmup:
+    days_before_cold: 21               # 2-3 weeks
+    keep_running_after_launch: true
+  ramp_per_inbox_per_day:              # cold emails, step up weekly if health holds
+    week_1: 10
+    week_2: 20
+    week_3: 35
+    week_4_plus: 50                    # target ceiling per inbox
+  rotation: "spread contacts across the rep's 5 inboxes; one inbox per contact for the whole thread"
+  capacity_at_full_ramp:
+    per_rep_per_day: 250
+    per_pod_per_day: 500               # AE + SDR
+
+health_guardrails:                     # checked daily; breach = auto-pause that inbox
+  hard_bounce_max: 0.02
+  spam_complaint_max: 0.001
+  inbox_placement_check: weekly
+  auto_pause_on_breach: true
+
+lanes:
+  tier_1_abm:
+    accounts_per_pod: 20
+    channels: [email, phone, linkedin]
+    owner: AE-led
+  tier_2_scaled:
+    accounts_per_rep: "100+ (from la-crm-audit T2 and la-signal)"
+    channels: [email, "phone only after engagement"]
+    owner: SDR-led
+    sender: "Gong Engage if it supports multi-inbox rotation at this volume (VERIFY); otherwise a dedicated cold-email sender with replies synced to Salesforce and Gong"
+
+dialer:
+  type: "power dialer with voicemail drop (Gong or Salesloft dialer, or a dedicated dialer - VERIFY)"
+  voicemails_per_persona: 3            # ~20 seconds, signal-led, ask to reply to the email
+  pair_with_email_within_hours: 24
+  metrics: [connects_per_hour, voicemail_to_reply_rate, callback_rate]
+  compliance: "Ringless voicemail and auto-dialed calls to mobiles raise TCPA and state-law questions. LEGAL REVIEW BEFORE LAUNCH."
+
+orchestrator:
+  tool: "n8n (default) or Make.com"
+  deterministic_steps: [schedules, retries, dedupe, suppression, icp_filters, salesforce_reads_writes,
+                        mailbox_rotation, caps, stop_rules, routing, gong_task_creation]
+  claude_steps: [scoring_rationale, research_brief, email_body, feedback_themes, rep_questions]

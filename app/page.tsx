@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
-import { ArrowRight, BadgeCheck, Check, KeyRound, Lock, PackageCheck, Upload } from "lucide-react";
+import { ArrowRight, BadgeCheck, Check, KeyRound, Lock, PackageCheck, Sparkles, Upload, Truck, Warehouse, Cpu, Layers, Workflow, ShieldCheck, Download, Activity, BookOpen } from "lucide-react";
 import { Logo } from "@/components/brand";
 import { ButtonLink } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Hero, { Capabilities, FeatureCards, TrustBadges } from "@/app/components/HeroSection";
-import { ASSET_TITLES } from "@/lib/pal/intent";
-import { DEFAULT_PACKS } from "@/lib/billing/config";
-import { SALESGENCY_URL, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
+import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: { absolute: "Enably — the AI GTM Architect by Salesgency" },
+  title: { absolute: "Loadsmart Live GTM Sovereign Agent OS" },
   description: SITE_DESCRIPTION,
   alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
-    siteName: "Enably by Salesgency",
+    siteName: "Loadsmart Live GTM Sovereign Agent OS",
     url: SITE_URL,
-    title: "Enably — the AI GTM Architect",
+    title: "Loadsmart Live GTM Sovereign Agent OS",
     description: SITE_DESCRIPTION,
     locale: "en_US",
   },
@@ -25,54 +24,55 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     icon: Upload,
-    title: "Tell it what you sell",
-    body: "Describe your offer in chat or a short questionnaire, and add docs, decks, links or call recordings. If something essential is missing, Enably asks one focused question.",
+    title: "1. Daily Signal Ingest (06:00 CT)",
+    body: "Detects dated, sourced why-now triggers (freight tender rejections, warehouse expansions, incumbent TMS dissatisfaction) and nominates 20 target accounts per AE/SDR pod.",
   },
   {
     icon: PackageCheck,
-    title: "Watch the package build",
-    body: "Enably plans your deliverables as a dependency graph and builds them in parallel waves. Every stage and every claim is visible, and unsupported facts are flagged.",
+    title: "2. Waterfall Persona Enrichment & Research (07:00–08:00 CT)",
+    body: "Enriches verified logistics, warehousing, and transportation decision-makers via Clay waterfall. Sourced briefs separate verified facts from AI inference (W = 1.00).",
   },
   {
     icon: BadgeCheck,
-    title: "Approve, refine, ship",
-    body: "Edit assets in chat, approve them into your Library, then hand them to your CRM, email or n8n / Make / Zapier. Nothing leaves without your OK.",
+    title: "3. Pod Batch Approval & Sequencer Hand-off (08:30 CT)",
+    body: "AEs and SDRs inspect generated PAS touchpoints in the review drawer. Strict human approval gates ensure nothing sends or writes to Salesforce without explicit confirmation.",
   },
 ];
 
-const usd = (cents: number) => `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`;
-const perCredit = (cents: number, credits: number) => `${(Math.round((cents / credits) * 10) / 10).toString()}¢`;
-
 const FAQ = [
   {
-    q: "What exactly do I get from a build?",
-    a: `A GTM package tailored to your inputs, assembled from ${Object.keys(ASSET_TITLES).length} asset types: ICP, buyer personas, positioning and messaging, outbound email and LinkedIn sequences, call scripts, battlecards, objection handling, KPI scorecards, playbooks, launch and prospecting plans, automation blueprints and more. Each run also includes project documentation and a single recommended next action.`,
+    q: "What is the Loadsmart Live GTM Sovereign Agent OS?",
+    a: "It is Loadsmart's internal Account-Based Selling (ABM) operating system and pod copilot, developed to standardize outbound prospecting across Opendock, ShipperGuide, Loadsmart AI, and Freight Brokerage. It connects deterministic daily workflows with Claude and Gemini agent reasoning.",
   },
   {
-    q: "How do credits work?",
-    a: "Credits pay for AI on Enably's model access. Each AI model call uses credits, which are reserved up front and refunded if the call fails. Packs are one-time purchases through Stripe Checkout, not a subscription. If you run out, builds still run from structured templates.",
+    q: "Which Loadsmart products are supported?",
+    a: "The system is strictly partitioned across four core offerings: Opendock (dock scheduling and yard management for warehouse VPs), ShipperGuide (enterprise cloud TMS for transportation directors spending $10M–$150M+), Loadsmart AI (11 autonomous freight agents), and Freight Brokerage (FTL, LTL, multimodal capacity).",
   },
   {
-    q: "Can I use my own AI key instead?",
-    a: "Yes. On the Credits & keys page you can add your own Anthropic, OpenAI or Vercel AI Gateway key. It's encrypted at rest (AES-256-GCM), only decrypted on the server to call your provider, and never shown back in the browser. Calls on your key use no credits.",
+    q: "How does the daily 06:00 to 17:00 schedule work?",
+    a: "The daily schedule runs automatically: 06:00 Signal Ingest → 06:30 CRM Collision Audit → 07:00 RevOps Account Tagging → 07:15 Persona Enrichment → 07:45 Account Brief Research → 08:15 1-to-1 PAS Email Synthesis → 08:30 Pod Review & Sequence Enrollment → 17:00 Daily Funnel & Leak Report.",
   },
   {
-    q: "Will it email prospects or change my CRM on its own?",
-    a: "No. Sending email, enrolling contacts, writing to your CRM, verifying addresses and handing off to workflows all require your explicit approval. You can also set daily send caps and suppression lists.",
+    q: "How does the CRM Shield prevent collision with active deals?",
+    a: "Before any account is enriched or contacted, the `la-crm-audit` skill checks Salesforce for active opportunities, customer contracts, or conflicting AE ownership. Colliding domains are automatically parked in the dashboard with a documented collision tag.",
   },
   {
-    q: "Is my data private?",
-    a: "Your conversations, builds, Library and Knowledge belong to your account, and other users can't see them. The data is stored in Postgres with row-level security. Integrations only use the accounts and keys you connect.",
+    q: "Can team members bring their own AI keys (BYOK)?",
+    a: "Yes. In Model Keys & BYOK, reps and operators can add their own Google Gemini, Anthropic Claude, OpenAI, or Vercel AI Gateway keys. Keys are encrypted at rest with AES-256-GCM and run unmetered.",
   },
   {
-    q: "Who is behind Enably?",
-    a: "Enably is built by Salesgency, which designs and builds revenue systems for sales teams. Enably packages that GTM architecture process into a product you can run yourself.",
+    q: "Are cold emails sent automatically?",
+    a: "Never. All outbound emails, sequence enrollments, and Salesforce record updates are gated behind REQUIRE_APPROVAL=true. Every batch must receive a manual confirmation click from the pod SDR or AE in the review drawer.",
+  },
+  {
+    q: "Where can I view the live pod dashboard and leak detection?",
+    a: "The Pod Dashboard & COE view (/app/dashboard) provides real-time tracking of target accounts, stage conversion funnels, active mailboxes, domain health scores, and automated leak detection across all four pods.",
   },
 ];
 
 export default function Landing() {
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-hidden bg-paper text-ink">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">
         Skip to content
       </a>
@@ -80,18 +80,20 @@ export default function Landing() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <Logo />
-            <span className="hidden text-xs text-faint sm:inline">by Salesgency</span>
           </div>
-          <nav className="hidden items-center gap-7 text-sm text-muted md:flex" aria-label="Primary">
-            <a href="#features" className="hover:text-ink">Features</a>
-            <a href="#how" className="hover:text-ink">How it works</a>
-            <a href="#pricing" className="hover:text-ink">Pricing</a>
-            <a href="#faq" className="hover:text-ink">FAQ</a>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted">
+            <Link href="/app" className="hover:text-blue-600 transition-colors">Pod Copilot</Link>
+            <Link href="/app/pipeline" className="hover:text-blue-600 transition-colors">Daily Pipeline</Link>
+            <Link href="/app/dashboard" className="hover:text-blue-600 transition-colors">Pod Dashboard</Link>
+            <Link href="/app/products" className="hover:text-blue-600 transition-colors">Products & Personas</Link>
+            <Link href="/app/playbook" className="hover:text-blue-600 transition-colors">Playbook v2</Link>
+            <Link href="/app/agents" className="hover:text-blue-600 transition-colors">11 Skills</Link>
           </nav>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-            <ButtonLink href="/signin" variant="ghost" size="sm">Sign in</ButtonLink>
-            <ButtonLink href="/signup" variant="clay" size="sm">Get started</ButtonLink>
+            <ButtonLink href="/app" variant="clay" className="h-9 px-4 text-xs font-semibold shadow-xs">
+              Launch Copilot <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            </ButtonLink>
           </div>
         </div>
       </header>
@@ -99,199 +101,187 @@ export default function Landing() {
       <main id="main">
         <Hero />
         <Capabilities />
-        <TrustBadges />
 
-        {/* Features */}
-        <section id="features" aria-labelledby="features-title" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <div className="max-w-2xl">
-            <p className="eyebrow !text-clay">What it does</p>
-            <h2 id="features-title" className="display mt-3 text-3xl text-ink sm:text-4xl">An AI architect, not another blank doc.</h2>
-            <p className="mt-3 text-muted">Enably runs the same process a GTM strategist would: gather, clarify, plan, build, verify, present. You see every step of it.</p>
+        {/* 4 Loadsmart Pods Overview Section */}
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="text-center max-w-3xl mx-auto">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-3 py-1 rounded-full border border-blue-200">
+              Account-Based Selling Motion
+            </span>
+            <h2 className="display mt-4 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              4 Dedicated Pods. 3 Core Products. Zero Buyer Cross-Contamination.
+            </h2>
+            <p className="mt-3 text-muted text-base">
+              Each AE/SDR pod holds 20 nominated accounts daily. Outreach messaging is bounded strictly to authorized personas and verified freight claims.
+            </p>
           </div>
-          <div className="mt-10">
-            <FeatureCards />
-          </div>
-        </section>
 
-        {/* How it works */}
-        <section id="how" aria-labelledby="how-title" className="border-y hairline bg-paper-2/70">
-          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <div className="max-w-2xl">
-              <p className="eyebrow !text-clay">How it works</p>
-              <h2 id="how-title" className="display mt-3 text-3xl text-ink sm:text-4xl">Three steps from scattered notes to a pipeline engine.</h2>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="p-6 rounded-2xl border border-cyan-200 bg-white dark:bg-slate-900 shadow-xs">
+              <div className="p-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 w-fit">
+                <Warehouse className="w-6 h-6" />
+              </div>
+              <span className="mt-4 block font-mono text-xs font-bold uppercase tracking-wider text-cyan-600">Pod 3</span>
+              <h3 className="mt-1 text-lg font-bold text-ink">Opendock</h3>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
+                Dock appointment scheduling & yard visibility for warehouse directors and 3PL distribution centers. 4,500+ network facilities.
+              </p>
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                <strong>Buyer:</strong> Director of Warehousing
+              </div>
             </div>
-            <ol className="mt-10 grid gap-4 md:grid-cols-3">
-              {STEPS.map(({ icon: Icon, title, body }, i) => (
-                <li key={title} className="card relative p-6">
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-clay text-sm font-bold text-clay-ink" aria-hidden>{i + 1}</span>
-                    <Icon className="h-5 w-5 text-muted" aria-hidden />
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold tracking-tight text-ink">
-                    <span className="sr-only">Step {i + 1}: </span>
-                    {title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
-                </li>
-              ))}
-            </ol>
+
+            <div className="p-6 rounded-2xl border border-purple-200 bg-white dark:bg-slate-900 shadow-xs">
+              <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 w-fit">
+                <Layers className="w-6 h-6" />
+              </div>
+              <span className="mt-4 block font-mono text-xs font-bold uppercase tracking-wider text-purple-600">Pod 2</span>
+              <h3 className="mt-1 text-lg font-bold text-ink">ShipperGuide TMS</h3>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
+                Enterprise cloud TMS for freight procurement, waterfall tendering, and track &amp; trace. Displaces legacy MercuryGate and spreadsheets.
+              </p>
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                <strong>Buyer:</strong> VP of Transportation
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl border border-orange-200 bg-white dark:bg-slate-900 shadow-xs">
+              <div className="p-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-orange-700 w-fit">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <span className="mt-4 block font-mono text-xs font-bold uppercase tracking-wider text-orange-600">Pod 4</span>
+              <h3 className="mt-1 text-lg font-bold text-ink">Loadsmart AI</h3>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
+                11 autonomous freight agents embedded in shipper systems to eliminate repetitive quoting, tracking, and carrier vetting workflows.
+              </p>
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                <strong>Buyer:</strong> Chief Supply Chain Officer
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl border border-blue-200 bg-white dark:bg-slate-900 shadow-xs">
+              <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 w-fit">
+                <Truck className="w-6 h-6" />
+              </div>
+              <span className="mt-4 block font-mono text-xs font-bold uppercase tracking-wider text-blue-600">Pod 1</span>
+              <h3 className="mt-1 text-lg font-bold text-ink">Freight Brokerage</h3>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
+                Contract and spot capacity across FTL, LTL, and drayage backed by 230,000+ vetted carriers and 98%+ on-time performance.
+              </p>
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                <strong>Buyer:</strong> Logistics Operations Manager
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* What it builds */}
-        <section id="builds" aria-labelledby="builds-title" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <p className="eyebrow !text-clay">What it builds</p>
-              <h2 id="builds-title" className="display mt-3 text-3xl text-ink sm:text-4xl">The whole GTM engine, versioned in your Library.</h2>
+        {/* Feature Cards */}
+        <section className="border-t hairline bg-paper-2/40 py-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="max-w-2xl">
+              <div className="eyebrow text-blue-600 font-bold">Architecture & Operations</div>
+              <h2 className="display mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                Engineering precision for enterprise freight enablement.
+              </h2>
               <p className="mt-3 text-muted">
-                {Object.keys(ASSET_TITLES).length} asset types written by specialist subagents. Enably picks the ones your goal needs, then you refine them in chat and approve the final versions.
+                Every outbound message is validated against Loadsmart&apos;s verified claims library. Missing facts remain as explicit placeholders rather than AI hallucinations.
               </p>
             </div>
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {Object.values(ASSET_TITLES).map((t) => (
-                <li key={t} className="flex items-center gap-3 rounded-xl border hairline bg-surface px-4 py-3 text-sm text-ink">
-                  <Check className="h-4 w-4 shrink-0 text-clay" aria-hidden /> {t}
-                </li>
+            <div className="mt-10">
+              <FeatureCards />
+            </div>
+          </div>
+        </section>
+
+        {/* 3 Step Process */}
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="max-w-2xl">
+            <div className="eyebrow text-blue-600 font-bold">Daily Rhythm</div>
+            <h2 className="display mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              From signal to sequenced outreach in 3 steps.
+            </h2>
+            <p className="mt-3 text-muted">
+              Deterministic n8n orchestration automates the heavy lifting between 06:00 and 08:30 CT so pods focus on phone calls, discovery, and closing.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {STEPS.map((s) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.title} className="card p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-bold tracking-tight text-ink">{s.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{s.body}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Live COE Dashboard Callout */}
+        <section className="border-y hairline bg-slate-900 text-white py-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="space-y-3 max-w-2xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono">
+                Real-Time Pod Analytics
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                Inspect where the outbound program leaks with the Pod Dashboard
+              </h2>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Track target accounts, conversion funnels from Nominated to Meeting Booked, mailbox bounce health (&lt; 2% cap), and stuck accounts with one-click unblock actions.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3 shrink-0">
+              <ButtonLink href="/app/dashboard" variant="clay" className="h-11 px-6 text-sm font-semibold shadow-md">
+                <Activity className="h-4 w-4 mr-1.5" /> Open Pod Dashboard
+              </ButtonLink>
+              <ButtonLink href="/app/playbook" variant="outline" className="h-11 px-6 text-sm font-semibold bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <BookOpen className="h-4 w-4 mr-1.5" /> Read Playbook v2
+              </ButtonLink>
+            </div>
+          </div>
+        </section>
+
+        <TrustBadges />
+
+        {/* FAQ Section */}
+        <section className="border-t hairline bg-paper-2/50 py-20">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <h2 className="display text-center text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="mt-3 text-center text-muted">
+              Operational details for Loadsmart AE/SDR pods, RevOps, and sales leadership.
+            </p>
+            <div className="mt-10 divide-y hairline rounded-2xl border hairline bg-surface shadow-xs">
+              {FAQ.map((f) => (
+                <details key={f.q} className="group p-6 [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer items-center justify-between gap-4 text-left font-semibold text-ink">
+                    <span>{f.q}</span>
+                    <span className="text-xl text-faint transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-muted">{f.a}</p>
+                </details>
               ))}
-            </ul>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section id="pricing" aria-labelledby="pricing-title" className="border-y hairline bg-paper-2/70">
-          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow !text-clay">Pricing</p>
-              <h2 id="pricing-title" className="display mt-3 text-3xl text-ink sm:text-4xl">Pay for what you use, or bring your own key.</h2>
-              <p className="mt-3 text-muted">There's no subscription. Credit packs are one-time purchases, and using your own AI key costs nothing on Enably.</p>
-            </div>
-            <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {DEFAULT_PACKS.map((p) => {
-                const featured = p.id === "growth";
-                return (
-                  <article key={p.id} className={`card relative flex flex-col p-6 ${featured ? "ring-2 ring-clay" : ""}`} aria-label={`${p.label} credit pack`}>
-                    {featured && <span className="absolute -top-3 left-6 rounded-full bg-flame px-2.5 py-0.5 text-[11px] font-semibold text-white">Recommended</span>}
-                    <h3 className="text-sm font-semibold text-ink">{p.label}</h3>
-                    <p className="mt-4 flex items-baseline gap-1">
-                      <span className="text-4xl font-bold tracking-tight text-ink">{usd(p.amountCents)}</span>
-                      <span className="text-sm text-muted">one-time</span>
-                    </p>
-                    <p className="mt-1 text-sm font-medium text-clay">{p.credits.toLocaleString("en-US")} credits</p>
-                    <p className="mt-1 text-xs text-faint">{perCredit(p.amountCents, p.credits)} per credit</p>
-                    <ul className="mt-5 space-y-2 text-sm text-muted">
-                      <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-evergreen" aria-hidden /> Enably's model access</li>
-                      <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-evergreen" aria-hidden /> Refunded if an AI call fails</li>
-                      <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-evergreen" aria-hidden /> Secure Stripe Checkout</li>
-                    </ul>
-                    <ButtonLink href="/signup" variant={featured ? "clay" : "outline"} className="mt-6 w-full">Get {p.label}</ButtonLink>
-                  </article>
-                );
-              })}
-              <article className="card flex flex-col bg-ink p-6 text-paper" aria-label="Bring your own key">
-                <h3 className="flex items-center gap-2 text-sm font-semibold"><KeyRound className="h-4 w-4 text-flame" aria-hidden /> Bring your own key</h3>
-                <p className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold tracking-tight">$0</span>
-                  <span className="text-sm text-paper/70">on Enably</span>
-                </p>
-                <p className="mt-1 text-sm font-medium text-paper/80">No credits used</p>
-                <ul className="mt-5 space-y-2 text-sm text-paper/75">
-                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-flame" aria-hidden /> Anthropic, OpenAI or Vercel AI Gateway</li>
-                  <li className="flex gap-2"><Lock className="mt-0.5 h-4 w-4 shrink-0 text-flame" aria-hidden /> Encrypted at rest, never shown back</li>
-                  <li className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-flame" aria-hidden /> Your provider bills you directly</li>
-                </ul>
-                <ButtonLink href="/signup" variant="clay" className="mt-6 w-full">Add your key</ButtonLink>
-              </article>
-            </div>
-            <p className="mt-6 text-center text-xs text-faint">Each AI model call uses credits. Without credits or a key, builds still run from structured templates. Prices are in USD.</p>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section id="faq" aria-labelledby="faq-title" className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
-          <p className="eyebrow text-center !text-clay">FAQ</p>
-          <h2 id="faq-title" className="display mt-3 text-center text-3xl text-ink sm:text-4xl">Questions, answered.</h2>
-          <div className="mt-10 divide-y divide-line rounded-2xl border hairline bg-surface">
-            {FAQ.map((f) => (
-              <details key={f.q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md font-medium text-ink">
-                  {f.q}
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-paper-2 text-muted transition-transform group-open:rotate-45" aria-hidden>+</span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{f.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section aria-labelledby="cta-title" className="px-4 pb-20 sm:px-6">
-          <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-3xl bg-ink px-6 py-14 text-paper sm:px-12">
-            <div className="hero-glow absolute inset-0 -z-10 opacity-70" aria-hidden />
-            <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-              <div className="max-w-xl">
-                <h2 id="cta-title" className="display text-3xl sm:text-4xl">Tell it what you sell. Get the engine back.</h2>
-                <p className="mt-3 text-paper/75">Create an account with Google or email and start your first GTM build in a couple of minutes.</p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <ButtonLink href="/signup" variant="clay" className="h-12 px-6 text-base">
-                  Get started <ArrowRight className="h-4 w-4" aria-hidden />
-                </ButtonLink>
-                <ButtonLink href="/signin" variant="ghost" className="h-12 px-6 text-base !text-paper hover:!bg-paper/10">
-                  Sign in
-                </ButtonLink>
-              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t hairline bg-paper-2/60">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 text-sm sm:px-6 md:grid-cols-[2fr_1fr_1fr]">
-          <div>
+      <footer className="border-t hairline bg-paper">
+        <div className="mx-auto flex max-w-6xl flex-col sm:flex-row items-center justify-between gap-4 px-4 py-8 sm:px-6 text-xs text-muted">
+          <div className="flex items-center gap-3">
             <Logo />
-            <p className="mt-3 max-w-sm text-muted">The AI GTM Architect. A product by <a href={SALESGENCY_URL} className="font-medium text-ink underline-offset-2 hover:underline">Salesgency</a>.</p>
+            <span>· Internal GTM Operating System</span>
           </div>
-          <nav aria-label="Product">
-            <h3 className="eyebrow">Product</h3>
-            <ul className="mt-3 space-y-2 text-muted">
-              <li><a href="#features" className="hover:text-ink">Features</a></li>
-              <li><a href="#how" className="hover:text-ink">How it works</a></li>
-              <li><a href="#pricing" className="hover:text-ink">Pricing</a></li>
-              <li><a href="#faq" className="hover:text-ink">FAQ</a></li>
-            </ul>
-          </nav>
-          <nav aria-label="Account">
-            <h3 className="eyebrow">Account</h3>
-            <ul className="mt-3 space-y-2 text-muted">
-              <li><a href="/signup" className="hover:text-ink">Create account</a></li>
-              <li><a href="/signin" className="hover:text-ink">Sign in</a></li>
-              <li><a href={SALESGENCY_URL} className="hover:text-ink">Salesgency.com</a></li>
-            </ul>
-          </nav>
-        </div>
-        <div className="border-t hairline">
-          <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-faint sm:px-6">© {new Date().getFullYear()} Salesgency. Enably is a Salesgency product.</p>
+          <div>
+            © {new Date().getFullYear()} Loadsmart Inc. All rights reserved. Built with Enably by Patrick Diamitani.
+          </div>
         </div>
       </footer>
-
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            name: "Enably",
-            applicationCategory: "BusinessApplication",
-            operatingSystem: "Web",
-            url: SITE_URL,
-            description: SITE_DESCRIPTION,
-            publisher: { "@type": "Organization", name: "Salesgency", url: SALESGENCY_URL },
-            offers: DEFAULT_PACKS.map((p) => ({ "@type": "Offer", name: `${p.label} — ${p.credits} credits`, price: (p.amountCents / 100).toFixed(2), priceCurrency: p.currency.toUpperCase() })),
-          }),
-        }}
-      />
     </div>
   );
 }

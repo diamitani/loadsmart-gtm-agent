@@ -17,20 +17,20 @@ const ACCEPT = ".pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg,.webp,.gif,.mp3,.m4a,.wav
 
 const STARTERS = [
   {
-    label: "Full GTM starter pack",
-    prompt: "We're launching an AI bookkeeping assistant for 10–50 person marketing agencies in the US. Build the full GTM starter pack.",
+    label: "Opendock Outbound Pod",
+    prompt: "Nominate 20 target enterprise distribution centers and 3PL facilities for Opendock dock scheduling. Generate persona briefs for Director of Warehousing and draft PAS email sequences.",
   },
   {
-    label: "ICP + personas + cold emails",
-    prompt: "Build an ICP, personas and a 4-step cold email sequence for our HR compliance software for multi-location restaurants. We compete with Gusto and Rippling.",
+    label: "ShipperGuide Enterprise TMS",
+    prompt: "Generate an ICP qualification and cold email sequence for ShipperGuide TMS targeting transportation VPs spending $15M+ on FTL freight.",
   },
   {
-    label: "Signals + automation",
-    prompt: "Create a signal-based prospecting plan and an n8n automation blueprint for selling cybersecurity audits to Series A fintech startups.",
+    label: "Loadsmart AI Freight Agents",
+    prompt: "Create account research briefs and outbound messaging for Loadsmart AI autonomous freight agents targeting shippers struggling with manual tracking and spot quote delays.",
   },
   {
-    label: "See the foundation check",
-    prompt: "Write me some cold emails.",
+    label: "Daily Pod Pipeline Run",
+    prompt: "Execute the daily 06:00 to 17:00 signal-to-sequence pipeline for Pod 2 (Enterprise ShipperGuide TMS) with approval gates.",
   },
 ];
 

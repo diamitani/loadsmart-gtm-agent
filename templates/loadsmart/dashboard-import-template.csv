@@ -1,0 +1,2 @@
+pod,account,industry,status,dq_reason,priority,signal_type,signal_product,signal_age_days,persona_opendock,persona_shipperguide,persona_loadsmart_ai,contacts_verified,emails_sent,hard_bounces,replies,meetings_held,stage2_opps,call_tasks_due,call_tasks_done,li_tasks_due,li_tasks_done
+pod-1,[Account name],[Industry],Active,,82,New site,Opendock,12,1,1,0,4,9,0,1,1,0,6,5,4,3

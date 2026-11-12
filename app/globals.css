@@ -2,37 +2,44 @@
 @source "../node_modules/streamdown/dist/*.js";
 
 /*
- * Enably design tokens — Salesgency palette.
- * White paper + ink neutrals, Salesgency blue (#0d6efd) for action ("clay" token kept for
- * compatibility), orange (#fd7e14) and violet (#a78bfa) as highlight accents, evergreen for
- * "verified", amber for "needs attention". Every color is a token so light/dark swap cleanly.
+ * Loadsmart Live GTM Sovereign Agent OS tokens.
+ * Crisp white paper (#ffffff) + midnight slate (#0f172a), Loadsmart Royal Blue (#1d4ed8)
+ * for primary brand action, dedicated accents for Opendock (#0e7490), ShipperGuide (#6d28d9),
+ * Loadsmart AI (#ea580c), and Freight Services (#2563eb).
  */
 :root {
   --paper: #ffffff;
-  --paper-2: #f6f8fb;
+  --paper-2: #f8fafc;
   --surface: #ffffff;
-  --ink: #14171f;
-  --ink-2: #343a40;
-  --muted: #6c757d;
-  --faint: #8f979f;
-  --line: #e6e9ee;
-  --line-strong: #d3d8df;
-  --clay: #0d6efd;
+  --ink: #0f172a;
+  --ink-2: #1e293b;
+  --muted: #64748b;
+  --faint: #94a3b8;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --clay: #1d4ed8;
   --clay-ink: #ffffff;
-  --clay-soft: #e7f0ff;
-  --flame: #fd7e14;
-  --flame-soft: #fff1e5;
-  --violet: #a78bfa;
-  --violet-soft: #f2eeff;
-  --evergreen: #1f7a5c;
-  --evergreen-soft: #e3f4ec;
-  --amber: #a46a12;
-  --amber-soft: #f7ecd6;
-  --rose: #b4363c;
-  --rose-soft: #f8e3e2;
-  --sky: #2e5f8a;
-  --sky-soft: #e2ecf5;
-  --shadow: 0 1px 2px rgb(20 23 31 / 0.04), 0 8px 24px -12px rgb(20 23 31 / 0.14);
+  --clay-soft: #eff6ff;
+  --od: #0e7490;
+  --od-soft: #ecfeff;
+  --sg: #6d28d9;
+  --sg-soft: #f5f3ff;
+  --ai: #ea580c;
+  --ai-soft: #fff7ed;
+  --brokerage: #2563eb;
+  --flame: #ea580c;
+  --flame-soft: #fff7ed;
+  --violet: #6d28d9;
+  --violet-soft: #f5f3ff;
+  --evergreen: #15803d;
+  --evergreen-soft: #f0fdf4;
+  --amber: #b45309;
+  --amber-soft: #fffbeb;
+  --rose: #b91c1c;
+  --rose-soft: #fef2f2;
+  --sky: #0284c7;
+  --sky-soft: #f0f9ff;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
 
   /* streamdown / shadcn-compatible aliases */
   --background: var(--paper);

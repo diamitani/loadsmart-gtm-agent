@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loadsmart ABM Pod Dashboard</title>
+<style>
+  :root{
+    --bg:#F6F8FB; --card:#FFFFFF; --ink:#0F172A; --muted:#5B6678; --line:#E3E8EF;
+    --brand:#1D4ED8; --brand-soft:#E8EEFC; --good:#15803D; --good-soft:#E7F5EC;
+    --warn:#B45309; --warn-soft:#FDF2E3; --bad:#B91C1C; --bad-soft:#FBEBEB;
+    --od:#0E7490; --sg:#6D28D9; --ai:#C2410C;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  h1{font-size:18px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:12.5px}
+  .badge{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+  .badge.sample{background:var(--warn-soft);color:var(--warn)}
+  .badge.live{background:var(--good-soft);color:var(--good)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select,button,label.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;padding:7px 11px;cursor:pointer}
+  button.primary,label.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button:hover,label.btn:hover{filter:brightness(.97)}
+  input[type=file]{display:none}
+  main{padding:22px 28px 60px;max-width:1360px;margin:0 auto}
+  .banner{background:var(--warn-soft);color:#7C3E06;border:1px solid #F4D9B3;border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:13px}
+  .tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .tile .k{color:var(--muted);font-size:12px;font-weight:600}
+  .tile .v{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tile .d{color:var(--muted);font-size:12px;margin-top:2px}
+  .grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card h2{font-size:14.5px;margin:0 0 2px;font-weight:700}
+  .card .lead{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .funnel-row{display:grid;grid-template-columns:160px 1fr 130px;gap:10px;align-items:center;margin:7px 0}
+  .funnel-row .lbl{font-size:13px}
+  .bar-wrap{background:#EEF2F7;border-radius:6px;height:22px;position:relative;overflow:hidden}
+  .bar{background:var(--brand);height:100%;border-radius:6px}
+  .bar.leak{background:var(--bad)}
+  .funnel-row .num{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+  .funnel-row .drop{color:var(--muted);font-size:11.5px;display:block}
+  .flag{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:8px;margin-bottom:8px;border:1px solid var(--line)}
+  .flag.bad{background:var(--bad-soft);border-color:#F2CACA}
+  .flag.warn{background:var(--warn-soft);border-color:#F4D9B3}
+  .flag.ok{background:var(--good-soft);border-color:#C9E8D3}
+  .flag .dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+  .flag.bad .dot{background:var(--bad)} .flag.warn .dot{background:var(--warn)} .flag.ok .dot{background:var(--good)}
+  .flag b{font-size:13px} .flag div{font-size:12.5px;color:#334155}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:7px 8px;white-space:nowrap;cursor:pointer;user-select:none}
+  td{border-bottom:1px solid #F0F3F7;padding:7px 8px;font-variant-numeric:tabular-nums}
+  td.r,th.r{text-align:right}
+  .pill{display:inline-block;padding:2px 7px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.ok{background:var(--good-soft);color:var(--good)} .pill.mute{background:#EEF2F7;color:var(--muted)}
+  .cell{display:inline-block;width:22px;height:22px;border-radius:5px;border:1px solid var(--line);background:#fff;vertical-align:middle}
+  .cell.on.od{background:var(--od);border-color:var(--od)} .cell.on.sg{background:var(--sg);border-color:var(--sg)} .cell.on.ai{background:var(--ai);border-color:var(--ai)}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .scroll{max-height:440px;overflow:auto}
+  .hbar{display:grid;grid-template-columns:150px 1fr 60px;gap:10px;align-items:center;margin:6px 0;font-size:13px}
+  .hbar .bar-wrap{height:16px}
+  .hbar .bar{background:#64748B}
+  .num-r{text-align:right;font-variant-numeric:tabular-nums}
+  textarea{width:100%;min-height:180px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--ink);background:#FBFCFE}
+  footer{color:var(--muted);font-size:12px;margin-top:20px}
+  @media (max-width:1100px){.tiles{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+  @media (max-width:600px){.tiles{grid-template-columns:repeat(2,1fr)}main,header{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Loadsmart ABM Pod Dashboard <span id="modeBadge" class="badge sample">Sample data</span></h1>
+    <div class="sub" id="subline">Daily view of the ABM pipeline: accounts, persona coverage, sequence results and leaks, by pod and product.</div>
+  </div>
+  <div class="controls">
+    <select id="podSel" aria-label="Pod"></select>
+    <select id="prodSel" aria-label="Product">
+      <option value="all">All products</option>
+      <option value="Opendock">Opendock</option>
+      <option value="ShipperGuide">ShipperGuide</option>
+      <option value="Loadsmart AI">Loadsmart AI</option>
+    </select>
+    <label class="btn primary" for="csvIn">Import CSV</label>
+    <input id="csvIn" type="file" accept=".csv,text/csv">
+    <button id="tplBtn">Download CSV template</button>
+    <button id="sampleBtn">Load sample data</button>
+  </div>
+</header>
+
+<main>
+  <div class="banner" id="banner"><b>Sample data.</b> These numbers are made up to show how the dashboard works; they are not Loadsmart results. Import the CSV that the <code>la-daily-report</code> skill produces (or a Salesforce export in the template's columns) to see real pods.</div>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Account funnel</h2>
+      <p class="lead">Accounts reaching each outcome, then how ready the active list is. The red bar is the highest stage below target; fix that first, since stages under it are probably symptoms. Dashed line = target.</p>
+      <div id="funnel"></div>
+    </div>
+    <div class="card">
+      <h2>Leak flags</h2>
+      <p class="lead">Checked top-down against starting thresholds (replace with your 30-day baseline).</p>
+      <div id="flags"></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Pods side by side</h2>
+    <p class="lead">Quality, activity and outcomes per pod. Click a header to sort.</p>
+    <div class="scroll" style="max-height:none"><table id="podTable"></table></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <h2>Persona coverage by account</h2>
+      <p class="lead">A verified contact for each product's buyer. Covered = 2 of 3. Sorted by priority.</p>
+      <div class="legend"><span><i style="background:var(--od)"></i>Opendock: ops / DC leader</span><span><i style="background:var(--sg)"></i>ShipperGuide: transportation</span><span><i style="background:var(--ai)"></i>Loadsmart AI: supply chain exec</span></div>
+      <div class="scroll"><table id="acctTable"></table></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h2>Disqualification reasons</h2>
+        <p class="lead">Why pods dropped accounts. A reason that repeats becomes a rule in account selection.</p>
+        <div id="dq"></div>
+      </div>
+      <div class="card">
+        <h2>Signal precision</h2>
+        <p class="lead">Share of active accounts with each signal type that reached a held meeting.</p>
+        <div id="sig"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Daily digest</h2>
+    <p class="lead">Plain-text summary for Slack or email. Copy and paste.</p>
+    <textarea id="digest" readonly></textarea>
+    <div style="margin-top:8px"><button id="copyBtn">Copy digest</button></div>
+  </section>
+
+  <footer>Part of the Loadsmart ABM OS kit. Data stays in your browser; nothing is uploaded. Thresholds: acceptance 80%, fresh signal 50%, coverage 70%, bounce 2% (3% = pause), task completion 70%.</footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var COLS=["pod","account","industry","status","dq_reason","priority","signal_type","signal_product","signal_age_days","persona_opendock","persona_shipperguide","persona_loadsmart_ai","contacts_verified","emails_sent","hard_bounces","replies","meetings_held","stage2_opps","call_tasks_due","call_tasks_done","li_tasks_due","li_tasks_done"];
+  var NUMS=["priority","signal_age_days","persona_opendock","persona_shipperguide","persona_loadsmart_ai","contacts_verified","emails_sent","hard_bounces","replies","meetings_held","stage2_opps","call_tasks_due","call_tasks_done","li_tasks_due","li_tasks_done"];
+  var T={acceptance:.80,fresh:.50,coverage:.70,bounce:.02,bouncePause:.03,tasks:.70};
+  var rows=[], live=false, sortKey="pod", sortDir=1;
+  var $=function(id){return document.getElementById(id)};
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function pct(n,d){return d?n/d:0}
+  function fmtP(x){return (Math.round(x*1000)/10).toFixed(1)+"%"}
+  function sum(a,k){return a.reduce(function(s,r){return s+(+r[k]||0)},0)}
+
+  // ---------- sample data (seeded, clearly fictional) ----------
+  function sample(){
+    var seed=7; function rnd(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646}
+    var inds=["Food & beverage","CPG","Retail","Manufacturing","Distribution"];
+    var sigs=[["New site","Opendock"],["Hiring ops","Opendock"],["Hiring transport","ShipperGuide"],["TMS change","ShipperGuide"],["Leadership change","Loadsmart AI"],["Earnings mention","Loadsmart AI"],["Intent","ShipperGuide"],["",""]];
+    var dqs=["Wrong industry","Too small","Current customer","Bad timing","No persona found"];
+    var out=[], podQ=[0.92,0.70,0.85];
+    for(var p=0;p<3;p++){
+      for(var i=1;i<=20;i++){
+        var active=rnd()<podQ[p];
+        var s=sigs[Math.floor(rnd()*sigs.length)];
+        var od=rnd()<0.75?1:0, sg=rnd()<(p===1?0.35:0.6)?1:0, ai=rnd()<0.4?1:0;
+        var cv=(od+sg+ai)*(1+Math.floor(rnd()*2));
+        var sent=active?cv*(2+Math.floor(rnd()*2)):0;
+        var b=active?Math.floor(sent*(p===1?0.06:0.015)*rnd()*2):0;
+        var rep=active&&s[0]&&rnd()<0.45?1+Math.floor(rnd()*2):(active&&rnd()<0.15?1:0);
+        var mtg=rep&&rnd()<(p===0?0.6:0.35)?1:0;
+        var s2=mtg&&rnd()<0.5?1:0;
+        var cd=active?cv*2:0, ld=active?cv:0;
+        out.push({pod:"pod-"+(p+1),account:"Sample Account "+String.fromCharCode(65+p)+(i<10?"0":"")+i,industry:inds[Math.floor(rnd()*inds.length)],
+          status:active?"Active":"Disqualified",dq_reason:active?"":dqs[Math.floor(rnd()*dqs.length)],
+          priority:Math.round(40+rnd()*58),signal_type:s[0],signal_product:s[1],signal_age_days:s[0]?Math.round(3+rnd()*110):"",
+          persona_opendock:od,persona_shipperguide:sg,persona_loadsmart_ai:ai,contacts_verified:cv,emails_sent:sent,hard_bounces:b,replies:rep,meetings_held:mtg,stage2_opps:s2,
+          call_tasks_due:cd,call_tasks_done:Math.round(cd*(p===2?0.55:0.8)*(0.8+rnd()*0.3)),li_tasks_due:ld,li_tasks_done:Math.round(ld*(p===2?0.5:0.75)*(0.8+rnd()*0.3))});
+      }
+    }
+    out.forEach(function(r){r.call_tasks_done=Math.min(r.call_tasks_done,r.call_tasks_due);r.li_tasks_done=Math.min(r.li_tasks_done,r.li_tasks_due)});
+    return out;
+  }
+
+  // ---------- CSV ----------
+  function parseCSV(text){
+    var out=[],row=[],f="",q=false;
+    for(var i=0;i<text.length;i++){
+      var c=text[i];
+      if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+      else if(c==='"') q=true;
+      else if(c===','){row.push(f);f=""}
+      else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(f);f=""; if(row.length>1||row[0]!=="") out.push(row); row=[] }
+      else f+=c;
+    }
+    if(f!==""||row.length){row.push(f); out.push(row)}
+    return out;
+  }
+  function loadCSV(text){
+    var g=parseCSV(text); if(g.length<2) throw new Error("The file has no data rows.");
+    var head=g[0].map(function(h){return h.trim().toLowerCase()});
+    var missing=COLS.filter(function(c){return head.indexOf(c)<0});
+    if(missing.length) throw new Error("Missing columns: "+missing.join(", ")+". Use the template.");
+    return g.slice(1).map(function(r){
+      var o={}; head.forEach(function(h,i){o[h]=(r[i]||"").trim()});
+      NUMS.forEach(function(k){o[k]=o[k]===""?"":(+o[k]||0)});
+      o.status=o.status||"Active"; return o;
+    }).filter(function(o){return o.account});
+  }
+
+  // ---------- metrics ----------
+  function covered(r){return (+r.persona_opendock)+(+r.persona_shipperguide)+(+r.persona_loadsmart_ai)>=2}
+  function hasProd(r,p){return p==="all"||(p==="Opendock"&&+r.persona_opendock)||(p==="ShipperGuide"&&+r.persona_shipperguide)||(p==="Loadsmart AI"&&+r.persona_loadsmart_ai)||r.signal_product===p}
+  function metrics(set){
+    var act=set.filter(function(r){return r.status==="Active"});
+    var fresh=act.filter(function(r){return r.signal_type&&r.signal_age_days!==""&&+r.signal_age_days<=60});
+    var cov=act.filter(covered);
+    var eng=act.filter(function(r){return +r.replies>0});
+    var mtg=act.filter(function(r){return +r.meetings_held>0});
+    var s2=act.filter(function(r){return +r.stage2_opps>0});
+    var sent=sum(act,"emails_sent"), b=sum(act,"hard_bounces"), rep=sum(act,"replies");
+    var due=sum(act,"call_tasks_due")+sum(act,"li_tasks_due"), done=sum(act,"call_tasks_done")+sum(act,"li_tasks_done");
+    return {assigned:set.length,active:act.length,fresh:fresh.length,covered:cov.length,engaged:eng.length,meetingAccts:mtg.length,s2Accts:s2.length,
+      meetings:sum(act,"meetings_held"),s2:sum(act,"stage2_opps"),sent:sent,bounces:b,replies:rep,contacts:sum(act,"contacts_verified"),due:due,done:done,
+      acceptance:pct(act.length,set.length),freshR:pct(fresh.length,act.length),coverR:pct(cov.length,act.length),bounceR:pct(b,sent),replyR:pct(rep,sent-b),taskR:pct(done,due),
+      dq:set.filter(function(r){return r.status!=="Active"})};
+  }
+  function leaks(m){
+    var L=[];
+    function add(stage,ok,warn,title,detail){L.push({stage:stage,level:ok?"ok":(warn?"warn":"bad"),title:title,detail:detail})}
+    add(1,m.acceptance>=T.acceptance,m.acceptance>=T.acceptance-.1,"List: pod acceptance "+fmtP(m.acceptance),"Accounts kept / assigned. Below "+fmtP(T.acceptance)+" means account selection is off; read the DQ reasons before changing copy.");
+    add(2,m.freshR>=T.fresh,m.freshR>=T.fresh-.15,"Timing: "+fmtP(m.freshR)+" of active accounts have a signal under 60 days","Static lists get polite \"not now\" replies. Feed la-signal before adding volume.");
+    add(3,m.coverR>=T.coverage,m.coverR>=T.coverage-.15,"Coverage: "+fmtP(m.coverR)+" of accounts have 2+ product personas","Single-threaded accounts stall. Re-run la-persona-enrich on the empty slots.");
+    add(4,m.bounceR<=T.bounce,m.bounceR<=T.bouncePause,"Data: hard bounce "+fmtP(m.bounceR),m.bounceR>T.bouncePause?"Over 3%: pause this pod's sends and re-verify contacts (needs a human yes).":"Keep verification on every contact before enrollment.");
+    add(5,m.taskR>=T.tasks,m.taskR>=T.tasks-.1,"Follow-through: "+fmtP(m.taskR)+" of call and LinkedIn tasks done","Email alone rarely books enterprise meetings. Check the pod's daily task queue.");
+    var conv=pct(m.meetingAccts,m.engaged);
+    add(6,conv>=.4||m.engaged<3,conv>=.25,"Conversion: "+fmtP(conv)+" of engaged accounts reached a meeting","Replies without meetings point to persona fit or the CTA, not the list.");
+    return L;
+  }
+
+  // ---------- render ----------
+  function filtered(){
+    var pod=$("podSel").value, prod=$("prodSel").value;
+    return rows.filter(function(r){return (pod==="all"||r.pod===pod)&&hasProd(r,prod)});
+  }
+  function render(){
+    var set=filtered(), m=metrics(set);
+    $("modeBadge").className="badge "+(live?"live":"sample"); $("modeBadge").textContent=live?"Imported data":"Sample data";
+    $("banner").style.display=live?"none":"block";
+    var tiles=[
+      ["Active accounts",m.active,m.assigned+" assigned, "+(m.assigned-m.active)+" disqualified"],
+      ["Covered accounts",fmtP(m.coverR),m.covered+" with 2+ personas"],
+      ["Reply rate",fmtP(m.replyR),m.replies+" replies / "+(m.sent-m.bounces)+" delivered"],
+      ["Meetings held",m.meetings,m.meetingAccts+" accounts"],
+      ["Stage 2 opps",m.s2,"from ABM accounts"],
+      ["Task completion",fmtP(m.taskR),m.done+" / "+m.due+" call + LinkedIn"]
+    ];
+    $("tiles").innerHTML=tiles.map(function(t){return '<div class="tile"><div class="k">'+esc(t[0])+'</div><div class="v">'+esc(t[1])+'</div><div class="d">'+esc(t[2])+'</div></div>'}).join("");
+
+    var L=leaks(m), firstBad=L.filter(function(x){return x.level!=="ok"})[0];
+    var stages=[["Assigned",m.assigned,0],["Kept (active)",m.active,1],["Engaged (reply)",m.engaged,0],["Meeting held",m.meetingAccts,6],["Stage 2 opp",m.s2Accts,0]];
+    var max=Math.max(1,m.assigned);
+    var fhtml=stages.map(function(s,i){
+      var prev=i?stages[i-1][1]:null, conv=prev?Math.round(pct(s[1],prev)*100):null;
+      var isLeak=firstBad&&s[2]===firstBad.stage;
+      return '<div class="funnel-row"><div class="lbl">'+esc(s[0])+'</div><div class="bar-wrap"><div class="bar'+(isLeak?" leak":"")+'" style="width:'+(100*s[1]/max).toFixed(1)+'%"></div></div><div class="num">'+s[1]+(conv!==null?'<span class="drop">'+conv+'% of prior</span>':'')+'</div></div>';
+    }).join("");
+    var ready=[["Fresh signal (60d)",m.fresh,m.freshR,2,T.fresh],["Covered (2+ personas)",m.covered,m.coverR,3,T.coverage]];
+    fhtml+='<div class="sub" style="margin:16px 0 4px;font-weight:600">Readiness of active accounts</div>'+ready.map(function(s){
+      var isLeak=firstBad&&s[3]===firstBad.stage;
+      return '<div class="funnel-row"><div class="lbl">'+esc(s[0])+'</div><div class="bar-wrap"><div class="bar'+(isLeak?" leak":"")+'" style="width:'+(100*s[2]).toFixed(1)+'%;'+(isLeak?"":"background:#64748B")+'"></div><div style="position:absolute;top:-3px;bottom:-3px;left:'+(100*s[4])+'%;border-left:2px dashed #0F172A" title="target"></div></div><div class="num">'+s[1]+'<span class="drop">'+fmtP(s[2])+' (target '+fmtP(s[4])+')</span></div></div>';
+    }).join("");
+    $("funnel").innerHTML=fhtml;
+
+    $("flags").innerHTML=L.map(function(x){return '<div class="flag '+x.level+'"><span class="dot"></span><div><b>'+esc(x.title)+'</b><div>'+esc(x.detail)+'</div></div></div>'}).join("");
+
+    // pod table
+    var pods=Array.from(new Set(rows.map(function(r){return r.pod}))).sort();
+    var prod=$("prodSel").value;
+    var pr=pods.map(function(p){var mm=metrics(rows.filter(function(r){return r.pod===p&&hasProd(r,prod)}));var lk=leaks(mm).filter(function(x){return x.level==="bad"}).length;return {pod:p,acceptance:mm.acceptance,coverR:mm.coverR,freshR:mm.freshR,bounceR:mm.bounceR,replyR:mm.replyR,taskR:mm.taskR,meetings:mm.meetings,s2:mm.s2,flags:lk}});
+    pr.sort(function(a,b){return (a[sortKey]>b[sortKey]?1:a[sortKey]<b[sortKey]?-1:0)*sortDir});
+    function pill(v,ok,warn,inv){var lvl=inv?(v<=ok?"ok":v<=warn?"warn":"bad"):(v>=ok?"ok":v>=warn?"warn":"bad");return '<span class="pill '+lvl+'">'+fmtP(v)+'</span>'}
+    var H=[["pod","Pod"],["acceptance","Acceptance"],["freshR","Fresh signal"],["coverR","Coverage"],["bounceR","Bounce"],["replyR","Reply rate"],["taskR","Tasks done"],["meetings","Meetings"],["s2","Stage 2"],["flags","Red flags"]];
+    $("podTable").innerHTML='<thead><tr>'+H.map(function(h,i){return '<th data-k="'+h[0]+'"'+(i?' class="r"':'')+'>'+h[1]+(sortKey===h[0]?(sortDir>0?" ▲":" ▼"):"")+'</th>'}).join("")+'</tr></thead><tbody>'+
+      pr.map(function(r){return '<tr><td>'+esc(r.pod)+'</td><td class="r">'+pill(r.acceptance,T.acceptance,T.acceptance-.1)+'</td><td class="r">'+pill(r.freshR,T.fresh,T.fresh-.15)+'</td><td class="r">'+pill(r.coverR,T.coverage,T.coverage-.15)+'</td><td class="r">'+pill(r.bounceR,T.bounce,T.bouncePause,true)+'</td><td class="r">'+fmtP(r.replyR)+'</td><td class="r">'+pill(r.taskR,T.tasks,T.tasks-.1)+'</td><td class="r">'+r.meetings+'</td><td class="r">'+r.s2+'</td><td class="r">'+(r.flags?'<span class="pill bad">'+r.flags+'</span>':'<span class="pill ok">0</span>')+'</td></tr>'}).join("")+'</tbody>';
+    Array.prototype.forEach.call($("podTable").querySelectorAll("th"),function(th){th.onclick=function(){var k=th.getAttribute("data-k");if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=k==="pod"?1:-1}render()}});
+
+    // account table
+    var acts=set.filter(function(r){return r.status==="Active"}).sort(function(a,b){return b.priority-a.priority});
+    $("acctTable").innerHTML='<thead><tr><th>Account</th><th>Pod</th><th class="r">Priority</th><th>Signal</th><th>OD</th><th>SG</th><th>AI</th><th class="r">Mtgs</th></tr></thead><tbody>'+
+      acts.map(function(r){var c=covered(r);return '<tr><td>'+esc(r.account)+(c?'':' <span class="pill warn">single</span>')+'</td><td>'+esc(r.pod)+'</td><td class="r">'+esc(r.priority)+'</td><td>'+(r.signal_type?esc(r.signal_type)+' <span class="sub">'+esc(r.signal_age_days)+'d</span>':'<span class="pill mute">none</span>')+'</td><td><span class="cell od'+(+r.persona_opendock?" on":"")+'" title="Opendock persona"></span></td><td><span class="cell sg'+(+r.persona_shipperguide?" on":"")+'" title="ShipperGuide persona"></span></td><td><span class="cell ai'+(+r.persona_loadsmart_ai?" on":"")+'" title="Loadsmart AI persona"></span></td><td class="r">'+esc(r.meetings_held)+'</td></tr>'}).join("")+'</tbody>';
+
+    // DQ reasons
+    var dq={}; m.dq.forEach(function(r){var k=r.dq_reason||"No reason given";dq[k]=(dq[k]||0)+1});
+    var dk=Object.keys(dq).sort(function(a,b){return dq[b]-dq[a]}), dmax=Math.max(1,dk.length?dq[dk[0]]:1);
+    $("dq").innerHTML=dk.length?dk.map(function(k){return '<div class="hbar"><div>'+esc(k)+'</div><div class="bar-wrap"><div class="bar" style="width:'+(100*dq[k]/dmax)+'%;'+(k==="No reason given"?"background:var(--bad)":"")+'"></div></div><div class="num-r">'+dq[k]+'</div></div>'}).join(""):'<div class="sub">No disqualifications in this view.</div>';
+
+    // signal precision
+    var sg={}; set.filter(function(r){return r.status==="Active"}).forEach(function(r){var k=r.signal_type||"No signal";sg[k]=sg[k]||{n:0,m:0};sg[k].n++;if(+r.meetings_held>0)sg[k].m++});
+    var sk=Object.keys(sg).sort(function(a,b){return pct(sg[b].m,sg[b].n)-pct(sg[a].m,sg[a].n)});
+    $("sig").innerHTML=sk.map(function(k){var p=pct(sg[k].m,sg[k].n);return '<div class="hbar"><div>'+esc(k)+' <span class="sub">n='+sg[k].n+'</span></div><div class="bar-wrap"><div class="bar" style="width:'+(100*p).toFixed(1)+'%;background:'+(k==="No signal"?"#94A3B8":"var(--brand)")+'"></div></div><div class="num-r">'+fmtP(p)+'</div></div>'}).join("")+'<div class="sub" style="margin-top:8px">Small n means read with care. "No signal" is the control group for the holdout test.</div>';
+
+    // digest
+    var podLbl=$("podSel").value==="all"?"All pods":$("podSel").value, prodLbl=$("prodSel").value==="all"?"all products":$("prodSel").value;
+    var lines=["ABM daily digest - "+podLbl+", "+prodLbl+(live?"":" (SAMPLE DATA, not real results)"),
+      "Accounts: "+m.active+" active of "+m.assigned+" assigned ("+fmtP(m.acceptance)+" kept)",
+      "Coverage: "+m.covered+" accounts with 2+ personas ("+fmtP(m.coverR)+"); fresh signal on "+fmtP(m.freshR),
+      "Email: "+m.sent+" sent, "+m.bounces+" hard bounces ("+fmtP(m.bounceR)+"), "+m.replies+" replies ("+fmtP(m.replyR)+" of delivered)",
+      "Tasks: "+m.done+"/"+m.due+" call + LinkedIn done ("+fmtP(m.taskR)+")",
+      "Outcomes: "+m.meetings+" meetings held, "+m.s2+" stage 2 opps",
+      firstBad?"Top leak: "+firstBad.title+". "+firstBad.detail:"No leaks over threshold."];
+    $("digest").value=lines.join("\n");
+  }
+  function setPods(){
+    var pods=Array.from(new Set(rows.map(function(r){return r.pod}))).sort(), cur=$("podSel").value;
+    $("podSel").innerHTML='<option value="all">All pods</option>'+pods.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>'}).join("");
+    if(pods.indexOf(cur)>=0) $("podSel").value=cur;
+  }
+
+  $("podSel").onchange=render; $("prodSel").onchange=render;
+  $("sampleBtn").onclick=function(){rows=sample();live=false;setPods();render()};
+  $("csvIn").onchange=function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var rd=new FileReader(); rd.onload=function(){try{rows=loadCSV(String(rd.result));live=true;setPods();render()}catch(err){alert(err.message)} e.target.value=""}; rd.readAsText(f);
+  };
+  $("tplBtn").onclick=function(){
+    var ex=["pod-1","Example Account","CPG","Active","","82","New site","Opendock","12","1","1","0","4","9","0","1","1","0","6","5","4","3"];
+    var txt=COLS.join(",")+"\n"+ex.join(",")+"\n";
+    try{var blob=new Blob([txt],{type:"text/csv"});var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="abm-dashboard-template.csv"; document.body.appendChild(a); a.click(); a.remove();}catch(e){}
+    // Some hosted viewers block downloads: also show the template so it can be copied into a .csv file.
+    $("digest").value="CSV TEMPLATE (copy into a file named abm-dashboard-template.csv):\n\n"+txt; $("digest").scrollIntoView({behavior:"smooth"});
+  };
+  $("copyBtn").onclick=function(){var t=$("digest");t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand("copy")}$("copyBtn").textContent="Copied";setTimeout(function(){$("copyBtn").textContent="Copy digest"},1500)};
+
+  rows=sample(); setPods(); render();
+})();
+</script>
+</body>
+</html>

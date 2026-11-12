@@ -11,7 +11,11 @@ const Body = z.object({
   model: z.string().trim().max(120).regex(/^[\w./:-]*$/).optional(),
 });
 
-const PREFIX: Partial<Record<(typeof BYOK_PROVIDERS)[number], RegExp>> = { anthropic: /^sk-ant-/, openai: /^sk-/ };
+const PREFIX: Partial<Record<(typeof BYOK_PROVIDERS)[number], RegExp>> = {
+  anthropic: /^sk-ant-/,
+  openai: /^sk-/,
+  gemini: /^AIza|^[A-Za-z0-9_-]{20,}$/,
+};
 
 /** Save (or replace) this account's own AI key. The key is encrypted at rest and never returned or logged. */
 export async function PUT(req: Request) {
@@ -22,7 +26,17 @@ export async function PUT(req: Request) {
   if (!parsed.success) return Response.json({ error: "Check the provider and key format." }, { status: 400 });
   const { provider, apiKey, model } = parsed.data;
   const prefix = PREFIX[provider];
-  if (prefix && !prefix.test(apiKey)) return Response.json({ error: `That doesn't look like an ${provider === "anthropic" ? "Anthropic (sk-ant-…)" : "OpenAI (sk-…)"} key.` }, { status: 400 });
+  if (prefix && !prefix.test(apiKey)) {
+    const hint =
+      provider === "anthropic"
+        ? "Anthropic (sk-ant-…)"
+        : provider === "openai"
+        ? "OpenAI (sk-…)"
+        : provider === "gemini"
+        ? "Google Gemini (AIza…)"
+        : "valid gateway";
+    return Response.json({ error: `That doesn't look like a valid ${hint} key.` }, { status: 400 });
+  }
   const now = new Date().toISOString();
   const existing = await getBillingStore().getKey(accountId);
   await getBillingStore().putKey({ accountId, provider, ...seal(apiKey, accountId), last4: apiKey.slice(-4), model: model || null, createdAt: existing?.createdAt ?? now, updatedAt: now });

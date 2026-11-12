@@ -1,8 +1,8 @@
 {
-  "name": "enablygtm",
+  "name": "loadsmart-gtm",
   "version": "1.0.0",
   "private": true,
-  "description": "Enably GTM Architect \u2014 the AI go-to-market architect agent (PAL intake \u2192 intent \u2192 foundation \u2192 instruct \u2192 plan \u2192 build \u2192 test \u2192 present).",
+  "description": "Loadsmart Live GTM Sovereign Agent OS — Internal ABM Pod Copilot, GTM Automation Engine & COE",
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3000 -H 0.0.0.0",
@@ -25,6 +25,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.99",
     "@ai-sdk/gateway": "^4.0.138",
+    "@ai-sdk/google": "^4.0.118",
     "@ai-sdk/mcp": "^2.0.93",
     "@ai-sdk/openai": "^4.0.111",
     "@ai-sdk/react": "^4.0.169",

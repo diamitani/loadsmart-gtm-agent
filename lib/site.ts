@@ -1,5 +1,6 @@
-/** Public marketing site settings. */
-export const SITE_URL = "https://enably.salesgency.com";
-export const SALESGENCY_URL = "https://salesgency.com";
+/** Loadsmart Live GTM Sovereign Agent OS settings. */
+export const SITE_URL = "https://loadsmart.com";
+export const LOADSMART_URL = "https://loadsmart.com";
 export const SITE_DESCRIPTION =
-  "Enably by Salesgency is the AI go-to-market architect. Turn notes, docs and links into a verified ICP, personas, messaging, outbound sequences, playbooks and KPIs — built in parallel, checked for truth, approved by you.";
+  "Loadsmart Live GTM Sovereign Agent OS — Internal Account-Based Selling (ABM) engine and Pod Copilot for Loadsmart AEs, SDRs, and RevOps. Orchestrates daily signals, accounts, and sequenced outreach across Opendock, ShipperGuide, Loadsmart AI, and Freight Services.";
+export const SALESGENCY_URL = "https://salesgency.com";

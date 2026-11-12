@@ -9,7 +9,27 @@ import { resolveAiContext } from "@/lib/agent/ai-context";
 import { getModel, meter } from "@/lib/agent/models";
 
 const KEY = randomBytes(32);
-const ENV_KEYS = ["BYOK_ENCRYPTION_KEY", "ENABLY_SESSION_SECRET", "ENABLY_BILLING", "AI_GATEWAY_API_KEY", "ANTHROPIC_API_KEY", "VERCEL_OIDC_TOKEN", "ENABLY_FREE_CREDITS", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "VERCEL", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "VERCEL_ENV"];
+const ENV_KEYS = [
+  "BYOK_ENCRYPTION_KEY",
+  "ENABLY_SESSION_SECRET",
+  "ENABLY_BILLING",
+  "AI_GATEWAY_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "GEMINI_API_KEY",
+  "GOOGLE_GENERATIVE_AI_API_KEY",
+  "GOOGLE_API_KEY",
+  "OPENAI_API_KEY",
+  "VERCEL_OIDC_TOKEN",
+  "ENABLY_FREE_CREDITS",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "VERCEL",
+  "SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "VERCEL_ENV",
+];
 let saved: Record<string, string | undefined> = {};
 beforeEach(() => {
   saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
@@ -66,6 +86,42 @@ describe("Stripe", () => {
     expect(priced.get("line_items[0][price]")).toBe("price_123");
     expect(priced.has("line_items[0][price_data][currency]")).toBe(false);
   });
+  it("builds subscription checkout params and credits recurring renewal invoices", () => {
+    const subPack = DEFAULT_PACKS.find((p) => p.mode === "subscription");
+    expect(subPack).toBeDefined();
+    const subForm = checkoutForm(subPack!, "acct_sub", "https://app.test");
+    expect(subForm.get("mode")).toBe("subscription");
+    expect(subForm.get("line_items[0][price_data][recurring][interval]")).toBe("month");
+
+    // Renewal invoice test:
+    const invCycle = {
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_cycle_123",
+          paid: true,
+          billing_reason: "subscription_cycle",
+          subscription_details: { metadata: { account_id: "acct_sub", pack_id: subPack!.id } },
+        },
+      },
+    };
+    const grant = creditsFromEvent(invCycle, DEFAULT_PACKS);
+    expect(grant).toEqual({ accountId: "acct_sub", credits: subPack!.credits, ref: "stripe:inv_in_cycle_123", packId: subPack!.id });
+
+    // Creation invoice (ignored to avoid double credit with checkout session completed):
+    const invCreate = {
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_create_123",
+          paid: true,
+          billing_reason: "subscription_create",
+          subscription_details: { metadata: { account_id: "acct_sub", pack_id: subPack!.id } },
+        },
+      },
+    };
+    expect(creditsFromEvent(invCreate, DEFAULT_PACKS)).toBeNull();
+  });
   it("parses custom packs and falls back on bad config", () => {
     expect(parsePacks('[{"id":"x","credits":10,"amountCents":100}]')).toMatchObject([{ id: "x", credits: 10, currency: "usd" }]);
     expect(parsePacks("nope")).toBe(DEFAULT_PACKS);
@@ -121,7 +177,18 @@ describe("AI routing: BYOK, credits, unmetered", () => {
     expect(getModel("main", paid)).not.toBeNull();
   });
 
-  it("uses the user's own key and skips credits", async () => {
+  it("supports Google Gemini as house provider immediately when GEMINI_API_KEY is present", async () => {
+    delete process.env.AI_GATEWAY_API_KEY;
+    process.env.GEMINI_API_KEY = "AIzaSyTestKey123456789";
+    const id = newAccountId();
+    await getBillingStore().grant(id, 5, "purchase", `stripe:${id}`);
+    const paid = await resolveAiContext(id);
+    expect(paid).toMatchObject({ mode: "house", balance: 5 });
+    const m = getModel("main", paid);
+    expect(m).not.toBeNull();
+  });
+
+  it("uses the user's own key and skips credits (Anthropic & Gemini)", async () => {
     const id = newAccountId();
     const now = new Date().toISOString();
     await getBillingStore().putKey({ accountId: id, provider: "anthropic", ...seal("sk-ant-user-key-abcdef", id), last4: "cdef", model: null, createdAt: now, updatedAt: now });
@@ -129,6 +196,13 @@ describe("AI routing: BYOK, credits, unmetered", () => {
     expect(ctx.mode).toBe("byok");
     expect(ctx.byok).toMatchObject({ provider: "anthropic", apiKey: "sk-ant-user-key-abcdef" });
     expect(getModel("main", ctx)).not.toBeNull();
+
+    // Now test Gemini BYOK
+    await getBillingStore().putKey({ accountId: id, provider: "gemini", ...seal("AIzaSyUserGeminiKey998877", id), last4: "8877", model: null, createdAt: now, updatedAt: now });
+    const geminiCtx = await resolveAiContext(id);
+    expect(geminiCtx.mode).toBe("byok");
+    expect(geminiCtx.byok).toMatchObject({ provider: "gemini", apiKey: "AIzaSyUserGeminiKey998877" });
+    expect(getModel("main", geminiCtx)).not.toBeNull();
   });
 
   it("ignores a key that no longer decrypts (rotated secret)", async () => {
