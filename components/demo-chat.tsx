@@ -117,7 +117,7 @@ export function DemoChat() {
             {status === "submitted" && <p className="pl-10 text-[13px] text-slate-400">Thinking…</p>}
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">
-                {error.message || "Something went wrong."}
+                {"The copilot is temporarily unavailable. Please try again in a moment."}
               </div>
             )}
           </div>

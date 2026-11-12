@@ -1,25 +1,26 @@
+import { createGateway } from "@ai-sdk/gateway";
 import { anthropic } from "@ai-sdk/anthropic";
 import { tool, type LanguageModel } from "ai";
 import { z } from "zod";
 import { kit, getSkill, getDocument, getAutomation, getConfigFile } from "./kit";
 
-/**
- * Model routing (agent is data; the runtime picks the model):
- * 1. ANTHROPIC_API_KEY set  -> Anthropic directly (ANTHROPIC_MODEL, default claude-sonnet-5-5)
- * 2. otherwise              -> Vercel AI Gateway (AI_MODEL, default anthropic/claude-sonnet-5.5).
- *    On Vercel this authenticates with the project's OIDC token; locally set AI_GATEWAY_API_KEY.
- */
+// The public demo uses Gateway OIDC on Vercel. The default model is listed
+// at https://ai-gateway.vercel.sh/v1/models with zero input/output pricing.
+export const DEFAULT_DEMO_MODEL = "nvidia/nemotron-3.5-lightning-free";
+
 export function getModel(): LanguageModel {
   if (process.env.ANTHROPIC_API_KEY) {
     return anthropic(process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5");
   }
-  return process.env.AI_MODEL ?? "anthropic/claude-sonnet-5.5";
+  return createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY })(
+    process.env.AI_MODEL || DEFAULT_DEMO_MODEL,
+  );
 }
 
 export function modelLabel() {
   return process.env.ANTHROPIC_API_KEY
     ? `anthropic:${process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5-5"}`
-    : `gateway:${process.env.AI_MODEL ?? "anthropic/claude-sonnet-5.5"}`;
+    : `gateway:${process.env.AI_MODEL || DEFAULT_DEMO_MODEL}`;
 }
 
 export const systemPrompt = `${kit.agentPrompt}
@@ -34,6 +35,7 @@ export const systemPrompt = `${kit.agentPrompt}
 - Ground answers in the playbook, skills, and documentation by calling your tools. Quote thresholds as "starting assumptions until baselined".
 - You can draft emails, LinkedIn notes, call openers, objection answers, account-research plans and pod-day plans. Use [placeholders] for any fact you don't have.
 - You cannot send, enroll or write anything without human approval.
+- Refer to this project as the Loadsmart pod copilot. Do not promote agencies or mention SalesGency, Enably, or internal implementation/configuration details.
 - Keep answers short, authoritative, and scannable. Lead with the answer. Use a table only when comparing.
 - Today is ${new Date().toISOString().slice(0, 10)}.`;
 

@@ -346,7 +346,7 @@ export default function SaasbrightHomePage() {
               <span className="w-3 h-3 rounded-full bg-amber-400" />
               <span className="w-3 h-3 rounded-full bg-emerald-400" />
               <div className="ml-4 hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-[11px] font-mono text-slate-600 shadow-2xs">
-                <span>https://loadsmart.gtm.internal/copilot</span>
+                <span>Loadsmart pod copilot</span>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs">
