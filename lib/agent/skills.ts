@@ -61,7 +61,8 @@ export function systemInstructions(): string {
 }
 
 export function skillText(name: string, maxChars = 6000): string {
-  const t = read(`skills/${name}/SKILL.md`);
+  let t = read(`skills/${name}/SKILL.md`);
+  if (!t) t = read(`skills/loadsmart/${name}/SKILL.md`);
   return t.length > maxChars ? t.slice(0, maxChars) + "\n…" : t;
 }
 

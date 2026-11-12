@@ -28,6 +28,17 @@ export function getModel(kind: "main" | "fast" = "main", ctx: AiContext | undefi
 function houseModel(kind: "main" | "fast") {
   const e = env();
   const id = kind === "fast" ? e.fastModel : e.model;
+  if (e.provider === "openrouter") {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    return createOpenAI({
+      apiKey,
+      baseURL: "https://openrouter.ai/api/v1",
+      headers: {
+        "HTTP-Referer": "https://loadsmart.com",
+        "X-Title": "Loadsmart GTM OS",
+      },
+    })(id);
+  }
   if (e.provider === "gemini") {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY;
     return createGoogleGenerativeAI({ apiKey })(id);
@@ -41,6 +52,16 @@ function houseModel(kind: "main" | "fast") {
 function byokModel(k: NonNullable<AiContext["byok"]>, kind: "main" | "fast") {
   const d = byokModels(k.provider);
   const id = kind === "main" && k.model ? k.model : d[kind];
+  if (k.provider === "openrouter") {
+    return createOpenAI({
+      apiKey: k.apiKey,
+      baseURL: "https://openrouter.ai/api/v1",
+      headers: {
+        "HTTP-Referer": "https://loadsmart.com",
+        "X-Title": "Loadsmart GTM OS",
+      },
+    })(id);
+  }
   if (k.provider === "gemini") return createGoogleGenerativeAI({ apiKey: k.apiKey })(id);
   if (k.provider === "anthropic") return createAnthropic({ apiKey: k.apiKey })(id);
   if (k.provider === "openai") return createOpenAI({ apiKey: k.apiKey })(id);

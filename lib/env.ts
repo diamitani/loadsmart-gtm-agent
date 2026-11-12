@@ -16,10 +16,13 @@ export function env() {
   const geminiKey = e.GEMINI_API_KEY || e.GOOGLE_GENERATIVE_AI_API_KEY || e.GOOGLE_API_KEY;
   const anthropicKey = e.ANTHROPIC_API_KEY;
   const openaiKey = e.OPENAI_API_KEY;
+  const openrouterKey = e.OPENROUTER_API_KEY;
 
   const explicitProvider = (e.ENABLY_PROVIDER || "").toLowerCase();
-  const provider: "gemini" | "gateway" | "anthropic" | "openai" | "demo" =
-    explicitProvider === "gemini" && geminiKey
+  const provider: "openrouter" | "gemini" | "gateway" | "anthropic" | "openai" | "demo" =
+    explicitProvider === "openrouter" && openrouterKey
+      ? "openrouter"
+      : explicitProvider === "gemini" && geminiKey
       ? "gemini"
       : explicitProvider === "gateway" && gatewayKey
       ? "gateway"
@@ -27,6 +30,8 @@ export function env() {
       ? "anthropic"
       : explicitProvider === "openai" && openaiKey
       ? "openai"
+      : openrouterKey
+      ? "openrouter"
       : geminiKey
       ? "gemini"
       : gatewayKey
@@ -38,7 +43,9 @@ export function env() {
       : "demo";
 
   const defaultMainModel =
-    provider === "gemini"
+    provider === "openrouter"
+      ? "openrouter/free"
+      : provider === "gemini"
       ? "gemini-2.5-pro"
       : provider === "anthropic"
       ? "claude-sonnet-5-5"
@@ -47,7 +54,9 @@ export function env() {
       : "nvidia/nemotron-3-ultra-550b-a55b";
 
   const defaultFastModel =
-    provider === "gemini"
+    provider === "openrouter"
+      ? "openrouter/free"
+      : provider === "gemini"
       ? "gemini-2.5-flash"
       : provider === "anthropic"
       ? "claude-haiku-5-5"

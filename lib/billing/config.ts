@@ -1,7 +1,7 @@
 import { encryptionKey } from "./crypto";
 import { authMode } from "@/lib/auth/config";
 
-export const BYOK_PROVIDERS = ["gemini", "anthropic", "openai", "gateway"] as const;
+export const BYOK_PROVIDERS = ["gemini", "anthropic", "openai", "gateway", "openrouter"] as const;
 export type ByokProvider = (typeof BYOK_PROVIDERS)[number];
 
 export const BYOK_LABELS: Record<ByokProvider, string> = {
@@ -9,11 +9,18 @@ export const BYOK_LABELS: Record<ByokProvider, string> = {
   anthropic: "Anthropic",
   openai: "OpenAI",
   gateway: "Vercel AI Gateway",
+  openrouter: "OpenRouter (Free & Universal)",
 };
 
 /** Default models per BYOK provider (override per key in the UI, or with env). */
 export function byokModels(provider: ByokProvider): { main: string; fast: string } {
   const e = process.env;
+  if (provider === "openrouter") {
+    return {
+      main: e.ENABLY_BYOK_OPENROUTER_MODEL || "openrouter/free",
+      fast: e.ENABLY_BYOK_OPENROUTER_FAST_MODEL || "openrouter/free",
+    };
+  }
   if (provider === "gemini") {
     return {
       main: e.ENABLY_BYOK_GEMINI_MODEL || "gemini-2.5-pro",

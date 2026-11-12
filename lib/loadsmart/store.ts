@@ -116,3 +116,4 @@ export async function addAccount(account: Account): Promise<Account> {
   writeLocalStore({ accounts: store.accounts });
   return account;
 }
+
