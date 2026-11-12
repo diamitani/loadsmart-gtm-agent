@@ -1,7 +1,19 @@
-import type { Metadata } from "next";
-import { Chat } from "@/components/chat";
+"use client";
 
-export const metadata: Metadata = { title: "Pod Copilot · Loadsmart ABM OS" };
+import { useState, useRef, useEffect } from "react";
+import { 
+  Bot, 
+  Send, 
+  Sparkles, 
+  ShieldCheck, 
+  Mail, 
+  CheckCircle2, 
+  Layers, 
+  User, 
+  Terminal,
+  ArrowRight,
+  RefreshCw
+} from "lucide-react";
 
 interface Message {
   id: string;

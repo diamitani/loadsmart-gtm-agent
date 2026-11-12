@@ -9,18 +9,40 @@ import {
   Truck, 
   Warehouse, 
   Cpu, 
-  ArrowRight,
-  ShieldCheck,
-  MailCheck,
-  Download,
-  Compass,
-  FileCheck2
+  ArrowRight, 
+  ShieldCheck, 
+  MailCheck, 
+  Download, 
+  Compass, 
+  FileCheck2,
+  Globe,
+  Sparkles
 } from "lucide-react";
 import { INITIAL_PODS } from "@/lib/data/initial-pods";
 
 export default function HomePage() {
   return (
     <div className="space-y-8">
+      {/* Top Banner to Public Marketing Site */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-xs shadow-xs">
+        <div className="flex items-center gap-2.5 text-blue-950 font-medium">
+          <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold flex-shrink-0">
+            <Globe className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-bold text-slate-900">Prospect Pal Outbound Marketing Engine</div>
+            <div className="text-slate-600">The 1 ICP to Full Outbound Workflow public marketing experience (modeled on saw-ecru & Enably).</div>
+          </div>
+        </div>
+        <Link
+          href="/home"
+          className="inline-flex items-center gap-1.5 font-bold text-blue-700 hover:text-blue-900 bg-white px-3.5 py-1.5 rounded-lg border border-blue-200 shadow-xs transition-colors self-start sm:self-auto"
+        >
+          <span>Explore Marketing Site (/home)</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
       {/* Hero Mission Statement */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-white via-slate-50/70 to-blue-50/40 border border-slate-200 p-6 sm:p-10 shadow-xs">
         <div className="relative z-10 max-w-3xl space-y-4">
