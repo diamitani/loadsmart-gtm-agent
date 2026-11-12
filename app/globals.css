@@ -119,3 +119,20 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Compact markdown used inside the Pod Copilot chat (dark theme) */
+.prose-chat { font-size: 14.5px; line-height: 1.6; color: #e5e7eb; }
+.prose-chat p { margin: 6px 0; }
+.prose-chat ul, .prose-chat ol { margin: 6px 0 6px 20px; }
+.prose-chat ul { list-style: disc; }
+.prose-chat ol { list-style: decimal; }
+.prose-chat code { font-family: monospace; font-size: 12.5px; background: #1e293b; padding: 1px 4px; border-radius: 4px; color: #93c5fd; }
+.prose-chat pre { background: #0f172a; padding: 10px 12px; border-radius: 8px; overflow-x: auto; border: 1px solid #1f2937; }
+.prose-chat pre code { background: transparent; padding: 0; }
+.prose-chat table { border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+.prose-chat th, .prose-chat td { border: 1px solid #1f2937; padding: 5px 8px; text-align: left; }
+.prose-chat strong { font-weight: 650; color: #f9fafb; }
+.prose-chat blockquote { border-left: 3px solid #374151; padding-left: 10px; color: #cbd5e1; }
+.bg-paper { background-color: #0b0f19; }
+.text-bad { color: #f87171; }
+.border-bad\/30 { border-color: rgba(248, 113, 113, 0.3); }

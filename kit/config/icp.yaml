@@ -1,0 +1,50 @@
+# Loadsmart ABM - Account ICP (v0 DRAFT)
+# Every skill reads this file. Change it here, bump the version, add a changelog line.
+# Values marked ASSUMPTION must be confirmed against Salesforce closed-won before go-live.
+
+version: 0.1.0
+updated: 2026-11-11
+owner: RevOps
+
+segment: "Enterprise and upper mid-market shippers"   # up-market motion
+
+industries:            # ASSUMPTION - replace with top 5 by closed-won count and spend
+  - Food and beverage
+  - Consumer packaged goods
+  - Retail
+  - Manufacturing
+  - Wholesale and distribution
+
+company_size:
+  revenue_band: "[fill from closed-won]"
+  freight_spend_band: "[fill from closed-won]"
+  employees_min: "[fill]"
+
+footprint:
+  min_warehouses_or_dcs: 2          # ASSUMPTION
+  truckload_volume: "meaningful FTL/LTL volume"
+
+tech_context:                        # Loadsmart AI sits on top of existing systems
+  has_any_of: [TMS, WMS, YMS]
+
+geography: ["United States", "Canada"]   # ASSUMPTION - Canada triggers CASL review
+
+exclusions:
+  - "Current customer of the SAME product (route to account manager as cross-sell instead)"
+  - "Open opportunity owned by another rep"
+  - "Freight brokers, 3PL competitors, carriers (carrier-side products are a separate motion)"
+  - "Prior opt-outs / suppression list"
+
+scoring:
+  # priority = fit x timing x coverage, each 0-1. Weights tuned monthly on outcomes.
+  fit:
+    industry_match: 0.30
+    size_match: 0.25
+    footprint_match: 0.25
+    tech_context_match: 0.20
+  timing:
+    signal_decay_days: [30, 60, 90]     # full weight <30d, half <60d, quarter <90d, zero after
+  coverage:
+    personas_required_for_covered: 2    # of 3 product personas
+
+pod_list_size: 20

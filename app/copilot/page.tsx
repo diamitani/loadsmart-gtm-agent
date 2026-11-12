@@ -1,19 +1,7 @@
-"use client";
+import type { Metadata } from "next";
+import { Chat } from "@/components/chat";
 
-import { useState, useRef, useEffect } from "react";
-import { 
-  Bot, 
-  Send, 
-  Sparkles, 
-  ShieldCheck, 
-  Mail, 
-  CheckCircle2, 
-  Layers, 
-  User, 
-  Terminal,
-  ArrowRight,
-  RefreshCw
-} from "lucide-react";
+export const metadata: Metadata = { title: "Pod Copilot · Loadsmart ABM OS" };
 
 interface Message {
   id: string;

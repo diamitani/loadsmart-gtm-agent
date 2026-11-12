@@ -2,9 +2,11 @@
   "name": "loadsmart-gtm",
   "version": "1.0.0",
   "private": true,
-  "description": "Loadsmart Live GTM Sovereign Agent Operating System — ABM Pods, Sovereign Prospector, and GTM Automation Engine",
+  "description": "Loadsmart Live GTM Sovereign Agent Operating System \u2014 ABM Pods, Sovereign Prospector, and GTM Automation Engine",
   "type": "module",
   "scripts": {
+    "bundle-kit": "node scripts/bundle-kit.mjs",
+    "prebuild": "node scripts/bundle-kit.mjs",
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build --webpack",
     "start": "next start",
