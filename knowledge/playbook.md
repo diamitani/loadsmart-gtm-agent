@@ -1,6 +1,6 @@
 # Loadsmart Sales Playbook: Hybrid AE/SDR Pod (ABM)
 
-As of November 11, 2026 · Built with the Enably sales-playbook structure from Patrick Diamitani's Loadsmart Sales Motion Workflow and the SalesGency Prospect Automation Engine overview.
+As of November 11, 2026 · Based on Patrick Diamitani's Loadsmart Sales Motion Workflow and prospect automation methodology.
 
 This playbook runs one hybrid motion. Claude automates the daily path from signal to sequence for 20 accounts per AE/SDR pod. The pod keeps account vetting, phone calls and LinkedIn multi-threading. Every section says what it is built from, so nothing here is invented.
 
@@ -56,7 +56,7 @@ This playbook runs one hybrid motion. Claude automates the daily path from signa
 3. Pods can disqualify any nominated account. Claude cannot override that.
 4. Only claims from the approved claims library go into outbound.
 
-**Sources.** Loadsmart Sales Motion Workflow (P. Diamitani, Nov 2026); SalesGency Prospect Automation Engine overview; loadsmart.com and the Oct 20, 2026 Loadsmart AI press release (retrieved Nov 11, 2026).
+**Sources.** Loadsmart Sales Motion Workflow (P. Diamitani, Nov 2026); Prospect Automation Engine overview (P. Diamitani); loadsmart.com and the Oct 20, 2026 Loadsmart AI press release (retrieved Nov 11, 2026).
 
 ---
 
@@ -197,7 +197,7 @@ One role per persona. Each product on the GTM diagram has its own buyer persona.
 | ShipperGuide | Planning and tendering take manual effort | Plan, procure and execute freight in one place | `[approved customer result]` | 15-minute look at your freight process |
 | Loadsmart AI | Teams spend hours on repetitive follow-up | An agent finishes the task end to end inside your systems | `[approved customer result]` | Pick one workflow, see it on your own freight |
 
-**Rule: the AI writes the body only.** The email wrapper is fixed, which protects CRM templates, keeps rep signatures consistent and makes first lines easy to A/B test (SalesGency method):
+**Rule: the AI writes the body only.** The email wrapper is fixed, which protects CRM templates, keeps rep signatures consistent and makes first lines easy to A/B test:
 
 ```
 Hi {{first_name}},
