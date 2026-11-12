@@ -33,8 +33,9 @@ export function parseSubagents(text: string): SubagentSpec[] {
 /** Tool names listed under `spec.tools` in agent/agents/gtm-architect.agent.yaml. */
 export function parseOrchestratorTools(text: string): string[] {
   const block = text.split(/\n\s{2}tools:\s*\n/)[1]?.split(/\n\s{2}[a-z]+:/)[0] ?? "";
-  return [...block.matchAll(/^\s*-\s*([a-z_]+)/gm)].map((m) => m[1]);
+  return [...block.matchAll(/^\s*-\s*([a-z0-9_]+)/gm)].map((m) => m[1]);
 }
+
 
 function readAgentFile(rel: string): string {
   try {
