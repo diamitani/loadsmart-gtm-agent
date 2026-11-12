@@ -80,19 +80,19 @@ export function DocumentsView() {
       });
     }
 
-    // 2. Core Architecture & PRD Guides (5 docs)
+    // 2. Core Architecture, PRD & Presentation Deck
     const guideDocs = (kit.documents || []).filter((d) => 
-      ["ARCHITECTURE.md", "PRD.md", "SETUP_GUIDE.md", "REVIEW.md", "BUILD_LOG.md"].includes(d.file)
+      ["LOADSMART_GTM_CASE_STUDY_DECK.md", "PRD.md", "ARCHITECTURE.md", "SETUP_GUIDE.md", "REVIEW.md", "BUILD_LOG.md"].includes(d.file)
     );
     for (const d of guideDocs) {
       list.push({
         id: d.file,
         category: "guides",
-        badge: "Guide",
+        badge: d.file.includes("DECK") ? "DECK" : "Guide",
         title: d.title || d.file.replace(/\.md$/, ""),
         file: `docs/${d.file}`,
-        owner: d.file === "PRD.md" ? "Product" : d.file === "ARCHITECTURE.md" ? "Eng" : d.file === "SETUP_GUIDE.md" ? "DevOps" : "QA/Ops",
-        desc: `Comprehensive system guide and production architecture specification`,
+        owner: d.file.includes("DECK") ? "Strategy" : d.file === "PRD.md" ? "Product" : d.file === "ARCHITECTURE.md" ? "Eng" : d.file === "SETUP_GUIDE.md" ? "DevOps" : "QA/Ops",
+        desc: d.file.includes("DECK") ? "The 7-Pillar GTM Engineering Presentation Deck & Speaker Notes" : "Comprehensive system guide and production architecture specification",
         content: d.content,
         format: "markdown",
       });
