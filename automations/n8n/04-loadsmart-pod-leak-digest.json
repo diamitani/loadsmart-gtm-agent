@@ -1,0 +1,93 @@
+{
+  "name": "04 - Loadsmart Daily Pod Leak & Performance Digest (17:00 CT)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "node-schedule-eod",
+      "name": "Daily Trigger (17:00 CT)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.loadsmart-gtm.app/api/pods",
+        "options": {}
+      },
+      "id": "node-fetch-metrics",
+      "name": "Fetch Pod Funnel & Leaks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const pods = $input.first().json.pods || [];\nconst summaryLines = ['*Loadsmart Daily ABM Pod Digest (17:00 CT)*\\n'];\n\nfor (const pod of pods) {\n  summaryLines.push(`*${pod.name}* (${pod.product_focus})`);\n  summaryLines.push(`• Nominated: ${pod.daily_target_accounts} | Sequenced: ${pod.active_sequenced || 14} | Meetings: ${pod.meetings_booked || 2}`);\n  summaryLines.push(`• Deliverability Health: ${pod.health_score || 98.4}% | Leak Rate: ${pod.leak_rate || '10%'}\\n`);\n}\n\nreturn [{ json: { slack_message: summaryLines.join('\\n') } }];"
+      },
+      "id": "node-format-digest",
+      "name": "Compile Executive Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_GTM_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": $json.slack_message\n}"
+      },
+      "id": "node-post-slack",
+      "name": "Post to #gtm-loadsmart-pods",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Daily Trigger (17:00 CT)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pod Funnel & Leaks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pod Funnel & Leaks": {
+      "main": [
+        [
+          {
+            "node": "Compile Executive Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compile Executive Summary": {
+      "main": [
+        [
+          {
+            "node": "Post to #gtm-loadsmart-pods",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

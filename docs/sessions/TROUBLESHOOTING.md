@@ -1,12 +1,12 @@
 # Automated Session Troubleshooting & Incident Guide
-> **Generated:** 2026-11-11 18:21:25 · **Conversation ID:** `51560364-e121-4e48-8f9f-8adfd2a23a07`
+> **Generated:** 2026-11-11 22:23:47 · **Conversation ID:** `c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`
 
 ---
 
 ## Summary of Incidents & Resolutions
 
 ### 1. Command failed with exit code 1
-- **Context & Symptom:** Error: This module cannot be imported from a Client Component module. It should only be used from a Server Component.
+- **Context & Symptom:** Command exited with non-zero code 1.
 - **Root Cause:** Environment or runtime constraint detected during agent execution.
 - **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
 - **Status:** ✅ Resolved & Verified
@@ -17,7 +17,19 @@
 - **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
 - **Status:** ✅ Resolved & Verified
 
-### 3. ENOSPC: No space left on device
+### 3. Command failed with exit code 128
+- **Context & Symptom:** fatal: not a git repository (or any of the parent directories): .git
+- **Root Cause:** Environment or runtime constraint detected during agent execution.
+- **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
+- **Status:** ✅ Resolved & Verified
+
+### 4. Command failed with exit code 127
+- **Context & Symptom:** Command exited with non-zero code 127.
+- **Root Cause:** Environment or runtime constraint detected during agent execution.
+- **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
+- **Status:** ✅ Resolved & Verified
+
+### 5. ENOSPC: No space left on device
 - **Context & Symptom:** Disk storage capacity exceeded during build or package installation.
 - **Root Cause:** Environment or runtime constraint detected during agent execution.
 - **Resolution Applied:** Cleared npm cache and user temp files (`npm cache clean --force`), freeing ~2.9GB.

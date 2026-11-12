@@ -1,0 +1,106 @@
+{
+  "name": "02 - Loadsmart Clay Waterfall Contact Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "loadsmart-enrichment-trigger",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "Webhook (From GTM Agent OS)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.clay.com/v3/tables/tb_loadsmart_contacts/rows",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.CLAY_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"domain\": $json.body.domain,\n  \"company_name\": $json.body.name,\n  \"product_target\": $json.body.product_focus,\n  \"target_titles\": [\"VP Logistics\", \"Director Supply Chain\", \"Plant Manager\", \"Director Transportation\"]\n}"
+      },
+      "id": "node-clay-reveal",
+      "name": "Clay Waterfall Discovery (Apollo + Hunter + Dropcontact)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.email_status }}",
+              "value2": "VERIFIED"
+            }
+          ]
+        }
+      },
+      "id": "node-filter-verified",
+      "name": "Filter Verified Emails Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.loadsmart-gtm.app/api/pipeline",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"stage\": \"la-persona-enrich\",\n  \"accountId\": $json.account_id,\n  \"contact\": {\n    \"name\": $json.full_name,\n    \"title\": $json.job_title,\n    \"email\": $json.email,\n    \"phone\": $json.phone_number,\n    \"linkedin\": $json.linkedin_url\n  }\n}"
+      },
+      "id": "node-sync-enriched",
+      "name": "Sync Enriched Contact to Loadsmart GTM OS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 240]
+    }
+  ],
+  "connections": {
+    "Webhook (From GTM Agent OS)": {
+      "main": [
+        [
+          {
+            "node": "Clay Waterfall Discovery (Apollo + Hunter + Dropcontact)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clay Waterfall Discovery (Apollo + Hunter + Dropcontact)": {
+      "main": [
+        [
+          {
+            "node": "Filter Verified Emails Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Verified Emails Only": {
+      "main": [
+        [
+          {
+            "node": "Sync Enriched Contact to Loadsmart GTM OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

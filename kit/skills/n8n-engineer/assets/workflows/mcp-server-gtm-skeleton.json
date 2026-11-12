@@ -1,0 +1,136 @@
+{
+  "name": "MCP Server GTM Skeleton",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Purpose-built MCP server skeleton\\nPublish this workflow to expose one intentionally narrow GTM tool to external MCP clients. Replace the placeholder response in the sub-workflow with your real account research, personalization, or CRM-safe action logic. Add auth before production use.",
+        "height": 320,
+        "width": 820,
+        "color": 7
+      },
+      "id": "ff897996-185c-491d-aab2-b93f39a842a2",
+      "name": "Sticky Note Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "path": "gtm-playbooks"
+      },
+      "id": "42db8c55-8d55-4d4a-bdc1-36f462d9fe57",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        380
+      ],
+      "webhookId": "f7afc31f-c7af-4a20-9370-74b4dcf3c0c8"
+    },
+    {
+      "parameters": {
+        "name": "run_gtm_playbook",
+        "workflowId": "={{ $workflow.id }}",
+        "description": "Use this tool to run a safe GTM playbook. Inputs should include the requested action, account context, recent signal, and objective. Good actions include account_research, draft_outreach, and deal_acceleration_brief.",
+        "jsonSchemaExample": "{\n  \"action\": \"account_research\",\n  \"accountName\": \"Northwind Security\",\n  \"companyWebsite\": \"https://northwind.example\",\n  \"recentSignal\": \"Hiring SDR leaders\",\n  \"objective\": \"Prepare a rep brief\"\n}",
+        "specifyInputSchema": true
+      },
+      "id": "5f4fd706-5457-4380-984c-fdb00b124ca7",
+      "name": "Run GTM Playbook",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Sub-workflow body\\nThis receives tool inputs from the MCP-exposed workflow tool. Start here when replacing the placeholder with your real playbook logic. Keep write actions narrow and approval-gated.",
+        "height": 280,
+        "width": 760,
+        "color": 6
+      },
+      "id": "3453d82e-50c3-4f0c-9427-5bc0c5555ab7",
+      "name": "Sticky Note Subworkflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        760
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "fd4f1d0d-40db-4b13-b362-846ee1f8c42c",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        340,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a80418f1-b7ab-4677-ab21-a3effb212bc1",
+              "name": "response",
+              "value": "=Action: {{$json.action}}\\nAccount: {{$json.accountName}}\\nWebsite: {{$json.companyWebsite}}\\nRecent signal: {{$json.recentSignal}}\\nObjective: {{$json.objective}}\\n\\nReplace this placeholder with the exact GTM playbook logic you want external MCP clients to invoke.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "21dabaf7-95ce-4919-a617-ebd55863fdf0",
+      "name": "Set MCP Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        940
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run GTM Playbook": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set MCP Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d04af8c0-0c6d-4e2f-ab49-0a0d5a8187da",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

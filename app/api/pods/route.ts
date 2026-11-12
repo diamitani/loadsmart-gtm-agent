@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPods, getAccounts, getMailboxes } from "@/lib/loadsmart/store";
+import { getPods, getAccounts, getMailboxes } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
@@ -58,4 +58,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Failed to fetch pod metrics" }, { status: 500 });
   }
 }
-

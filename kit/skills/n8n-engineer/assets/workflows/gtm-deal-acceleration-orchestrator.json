@@ -1,0 +1,238 @@
+{
+  "name": "GTM Deal Acceleration Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Deal acceleration skeleton\\nUse this when an opportunity becomes at-risk, stalls after a meeting, or needs an exec-ready summary. Replace the manual trigger with your CRM stage-change trigger or webhook.",
+        "height": 280,
+        "width": 780,
+        "color": 7
+      },
+      "id": "db95f478-9ec0-49fe-99f2-80312ac8cf06",
+      "name": "Sticky Note Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1b9e1b74-765c-4544-96b0-26e90b883c4a",
+      "name": "Trigger Manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        260,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d22b0b7-f418-43ca-bc1f-ebdc9f91a37c",
+              "name": "accountName",
+              "value": "Apex Industrial",
+              "type": "string"
+            },
+            {
+              "id": "79d3aa27-e9de-45ca-8f96-8f86775106f4",
+              "name": "dealStage",
+              "value": "Proposal",
+              "type": "string"
+            },
+            {
+              "id": "f836cc76-2d09-4df0-8f7c-c3f2d77803c3",
+              "name": "dealHealth",
+              "value": "at-risk",
+              "type": "string"
+            },
+            {
+              "id": "62a6a4be-ca2e-4817-a30c-f7646c7b0f76",
+              "name": "blocker",
+              "value": "Security review stalled and champion went quiet",
+              "type": "string"
+            },
+            {
+              "id": "c0d3d4be-bab7-4b8b-a52f-4fd7d88abf04",
+              "name": "nextMeetingDate",
+              "value": "2026-03-27",
+              "type": "string"
+            },
+            {
+              "id": "35085585-4dca-4e18-9540-257d7fa83734",
+              "name": "accountExecutive",
+              "value": "Jordan",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dfb8198c-ceeb-4d8e-a560-69a613e1632b",
+      "name": "Set Sample Deal",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f864de4e-a6ab-4a2a-b1d8-4a612d3bc3bd",
+              "leftValue": "={{ $json.dealHealth }}",
+              "rightValue": "at-risk",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2e5ec350-c41e-43d0-b05a-e4ee124c50d2",
+      "name": "Needs Intervention?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        740,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "text": "=Create an executive-ready deal acceleration brief for {{$json.accountName}}. Stage: {{$json.dealStage}}. Health: {{$json.dealHealth}}. Blocker: {{$json.blocker}}. Account executive: {{$json.accountExecutive}}. Next meeting date: {{$json.nextMeetingDate}}. Return risks, immediate actions, stakeholders to engage, and what the rep should do in the next 48 hours.",
+        "options": {
+          "systemMessage": "You are a revenue operator helping an AE close and unblock deals. Be specific, practical, and concise. Focus on real actions that create momentum."
+        }
+      },
+      "id": "4798c043-7bf9-47bb-8229-9bbfd3076f86",
+      "name": "Create Acceleration Brief",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1020,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "12dc69e4-2531-46ff-a18b-20d9f147ea9d",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1020,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f8017f6-25ad-41d2-b8e5-0661a8194612",
+              "name": "status",
+              "value": "Deal is not marked at-risk. No acceleration brief generated.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d1ff42e-cdc3-4316-a714-22cd238e4675",
+      "name": "No Immediate Action",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1020,
+        420
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Manually": {
+      "main": [
+        [
+          {
+            "node": "Set Sample Deal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Sample Deal": {
+      "main": [
+        [
+          {
+            "node": "Needs Intervention?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Intervention?": {
+      "main": [
+        [
+          {
+            "node": "Create Acceleration Brief",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Immediate Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create Acceleration Brief",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9c56b52d-0873-4264-beca-08345369b07c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

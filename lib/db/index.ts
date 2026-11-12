@@ -17,4 +17,6 @@ export function getStore(): Store {
   return store;
 }
 
+export * from "./pod-store";
 export type * from "./types";
+

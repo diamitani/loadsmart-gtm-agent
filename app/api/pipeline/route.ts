@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAccounts, updateAccountStage } from "@/lib/loadsmart/store";
+import { getAccounts, updateAccountStage } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -31,4 +31,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to execute pipeline stage" }, { status: 500 });
   }
 }
-

@@ -1,0 +1,701 @@
+[
+  {
+    "name": "research_web",
+    "description": "Research a company or person on the public web. provider 'jina' reads a URL/domain; 'serpapi' runs a search query.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "jina",
+            "serpapi"
+          ]
+        },
+        "query": {
+          "type": "string",
+          "description": "Domain/URL for jina; search query (company, person + company) for serpapi"
+        },
+        "recency_days": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "provider",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "prospect_leads",
+    "description": "Build a lead list from ICP filters via Apollo People Search (no emails returned; enrichment is a separate, approved step). For Clay, use the Clay MCP tools if connected.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "apollo"
+          ]
+        },
+        "filters": {
+          "type": "object",
+          "properties": {
+            "titles": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "geographies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "employee_range": {
+              "description": "e.g. 50-500",
+              "type": "string"
+            },
+            "industries": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            }
+          },
+          "required": [
+            "titles"
+          ]
+        }
+      },
+      "required": [
+        "provider",
+        "filters"
+      ]
+    }
+  },
+  {
+    "name": "enrich_contact",
+    "description": "Enrich a person (by email) or company (by domain) via Apollo. Consumes provider credits — requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "apollo"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider"
+      ]
+    }
+  },
+  {
+    "name": "verify_email",
+    "description": "Verify deliverability via Hunter. Discloses the address to a third party — requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "hunter"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        }
+      },
+      "required": [
+        "provider",
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "send_email",
+    "description": "Send ONE personalised email via Resend. Requires approval. Blocked if the recipient is suppressed or the daily cap (25) is reached.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "resend"
+          ]
+        },
+        "to": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body_text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body_html": {
+          "type": "string"
+        },
+        "scheduled_at_iso": {
+          "type": "string"
+        },
+        "account": {
+          "description": "Account name to log the activity against",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "to",
+        "subject",
+        "body_text"
+      ]
+    }
+  },
+  {
+    "name": "generate_personalization_snippets",
+    "description": "Write a short personalised opener, why-now line and CTA for each contact, grounded ONLY in the research notes you pass (from research_web / enrich_contact). Facts not in the notes become [placeholders]. Free — no external sends.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "offer": {
+          "type": "string",
+          "minLength": 3,
+          "description": "What we sell, in one line"
+        },
+        "tone": {
+          "default": "consultative",
+          "type": "string",
+          "enum": [
+            "consultative",
+            "direct",
+            "friendly",
+            "formal"
+          ]
+        },
+        "contacts": {
+          "minItems": 1,
+          "maxItems": 25,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string"
+              },
+              "research_notes": {
+                "description": "Verified facts about the person/company, with sources",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "company"
+            ]
+          }
+        }
+      },
+      "required": [
+        "offer",
+        "contacts"
+      ]
+    }
+  },
+  {
+    "name": "create_email_sequence",
+    "description": "Save a multi-step email sequence (3/5/7/12 steps) to the Library as a draft asset.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "sequence_name": {
+          "type": "string"
+        },
+        "steps": {
+          "minItems": 1,
+          "maxItems": 12,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "day_offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "subject": {
+                "type": "string"
+              },
+              "body_text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "day_offset",
+              "subject",
+              "body_text"
+            ]
+          }
+        }
+      },
+      "required": [
+        "sequence_name",
+        "steps"
+      ]
+    }
+  },
+  {
+    "name": "enroll_contacts_in_sequence",
+    "description": "Enroll contacts into a sequence through your automation workflow (n8n/Make/Zapier sequencer). Suppressed contacts are removed. Requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "sequence_id_or_name": {
+          "type": "string"
+        },
+        "contacts": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "first_name": {
+                "type": "string"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "email"
+            ]
+          }
+        }
+      },
+      "required": [
+        "sequence_id_or_name",
+        "contacts"
+      ]
+    }
+  },
+  {
+    "name": "find_crm_records",
+    "description": "Search HubSpot contacts/companies/deals with simple equality filters (e.g. {email: 'x@y.com'} or {domain: 'acme.com'}).",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "hubspot"
+          ]
+        },
+        "object_type": {
+          "type": "string",
+          "enum": [
+            "contact",
+            "company",
+            "deal"
+          ]
+        },
+        "filters": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      },
+      "required": [
+        "provider",
+        "object_type"
+      ]
+    }
+  },
+  {
+    "name": "upsert_crm_record",
+    "description": "Create or update a CRM record. HubSpot: contact (by email), company (by domain), deal (by dealname). Show the field mapping first. Requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "hubspot"
+          ]
+        },
+        "object_type": {
+          "type": "string",
+          "enum": [
+            "contact",
+            "company",
+            "deal"
+          ]
+        },
+        "unique_key": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        }
+      },
+      "required": [
+        "provider",
+        "object_type",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "log_crm_activity",
+    "description": "Attach an activity (email/call/note/task) to a HubSpot record as a note, and mirror it into the Enably activity tracker. Requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "hubspot"
+          ]
+        },
+        "object_type": {
+          "type": "string",
+          "enum": [
+            "contact",
+            "company",
+            "deal"
+          ]
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "activity_type": {
+          "type": "string",
+          "enum": [
+            "email",
+            "call",
+            "note",
+            "task"
+          ]
+        },
+        "activity_body": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string",
+          "description": "Account name for the Enably tracker"
+        },
+        "timestamp_iso": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "object_type",
+        "object_id",
+        "activity_type",
+        "activity_body",
+        "account"
+      ]
+    }
+  },
+  {
+    "name": "dedupe_crm_records",
+    "description": "Report duplicate records in a list (e.g. from find_crm_records or a lead list) by normalised unique fields. Report only — merging is done in the CRM.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "records": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "unique_fields": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "records",
+        "unique_fields"
+      ]
+    }
+  },
+  {
+    "name": "write_supabase_table",
+    "description": "Insert/upsert rows into an allowlisted Supabase table (ENABLY_SUPABASE_WRITABLE_TABLES, default 'lead_snapshots') for analytics. Requires approval.",
+    "needsApproval": true,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "table": {
+          "type": "string"
+        },
+        "rows": {
+          "minItems": 1,
+          "maxItems": 500,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "upsert_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table",
+        "rows"
+      ]
+    }
+  },
+  {
+    "name": "log_activity",
+    "description": "Log sales activity to the Enably tracker (calls, emails, LinkedIn, DMs, meetings, posts, SMS). Ask for type and account if missing.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "call",
+            "email",
+            "linkedin",
+            "dm",
+            "meeting",
+            "post",
+            "sms",
+            "note"
+          ]
+        },
+        "account": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contact": {
+          "type": "string"
+        },
+        "count": {
+          "default": 1,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "cold",
+            "follow_up",
+            "closing",
+            "other"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "occurred_at_iso": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "account"
+      ]
+    }
+  },
+  {
+    "name": "activity_summary",
+    "description": "Summarise logged activity for today, this week or this month — totals by channel and top accounts.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "period": {
+          "default": "today",
+          "type": "string",
+          "enum": [
+            "today",
+            "week",
+            "month"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "generate_template",
+    "description": "Generate a reusable outreach template (email, LinkedIn, DM, call opener or SMS) for a persona and goal, with [editable placeholders]. Optionally save it to the Library as a draft.",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "enum": [
+            "email",
+            "linkedin",
+            "dm",
+            "call",
+            "sms"
+          ]
+        },
+        "persona": {
+          "type": "string",
+          "minLength": 2,
+          "description": "Target persona / segment, e.g. 'VP Finance at 50–200 person SaaS'"
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 2,
+          "description": "e.g. 'book a discovery call', 'revive a stalled deal'"
+        },
+        "tone": {
+          "default": "consultative",
+          "type": "string",
+          "enum": [
+            "consultative",
+            "direct",
+            "friendly",
+            "formal"
+          ]
+        },
+        "save_to_library": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "channel",
+        "persona",
+        "goal"
+      ]
+    }
+  },
+  {
+    "name": "add_suppression",
+    "description": "Add an email or domain to the do-not-contact list (opt-outs, bounces, competitors, customers).",
+    "needsApproval": false,
+    "parameters": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 3
+        },
+        "reason": {
+          "default": "opt-out",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ]
+    }
+  }
+]

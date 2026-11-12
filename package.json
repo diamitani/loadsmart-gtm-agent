@@ -5,6 +5,8 @@
   "description": "Loadsmart Live GTM Sovereign Agent OS — Internal ABM Pod Copilot, GTM Automation Engine & COE",
   "type": "module",
   "scripts": {
+    "bundle-kit": "node scripts/bundle-kit.mjs",
+    "prebuild": "node scripts/bundle-kit.mjs",
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
@@ -40,6 +42,8 @@
     "next": "^16.4.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "streamdown": "^2.7.1",
     "tailwind-merge": "^3.7.0",

@@ -1,0 +1,106 @@
+{
+  "name": "03 - Loadsmart Gong Sequence Enrollment (Human Approved)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "loadsmart-sequence-enroll",
+        "options": {}
+      },
+      "id": "node-approval-webhook",
+      "name": "Webhook (Batch Approval Signed)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.body.approved_by_rep }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node-verify-human-gate",
+      "name": "Verify Human Rep Approval Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.gong.io/v2/flows/enroll",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic {{ $env.GONG_API_CREDENTIALS }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"flow_id\": $json.body.gong_flow_id,\n  \"contacts\": $json.body.contacts,\n  \"mailbox_rotation\": $json.body.assigned_mailboxes\n}"
+      },
+      "id": "node-gong-enroll",
+      "name": "Enroll in Gong Multi-Channel Flow (Email + Dial + LinkedIn)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 240]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.loadsmart-gtm.app/api/pipeline",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"stage\": \"la-sequence\",\n  \"status\": \"SEQUENCED\",\n  \"enrolledCount\": $json.contacts.length\n}"
+      },
+      "id": "node-update-status",
+      "name": "Mark Accounts SEQUENCED in OS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 240]
+    }
+  ],
+  "connections": {
+    "Webhook (Batch Approval Signed)": {
+      "main": [
+        [
+          {
+            "node": "Verify Human Rep Approval Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Human Rep Approval Gate": {
+      "main": [
+        [
+          {
+            "node": "Enroll in Gong Multi-Channel Flow (Email + Dial + LinkedIn)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enroll in Gong Multi-Channel Flow (Email + Dial + LinkedIn)": {
+      "main": [
+        [
+          {
+            "node": "Mark Accounts SEQUENCED in OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
