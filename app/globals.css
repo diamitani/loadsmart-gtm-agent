@@ -52,10 +52,31 @@
 }
 
 body {
-  background-color: var(--paper-50);
+  background-color: #ffffff;
   color: var(--ink-900);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Saasbright Sky & Atmospheric Lighting */
+.bg-saasbright-sky {
+  background: radial-gradient(120% 80% at 50% -10%, #e0f2fe 0%, #f0f9ff 30%, #ffffff 75%);
+}
+
+.card-saasbright {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.02);
+  border-radius: 1.5rem;
+}
+
+.card-saasbright-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-saasbright-hover:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
 }
 
 /* Tokens and utility compatibility aliases */

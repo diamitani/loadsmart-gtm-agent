@@ -29,15 +29,15 @@ function TabContent() {
 
   return (
     <div className="space-y-6">
-      {/* Centered Segmented Control */}
+      {/* Centered Saasbright Rounded Segmented Control */}
       <div className="flex items-center justify-center">
-        <div className="inline-flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-xs text-xs font-semibold">
+        <div className="inline-flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-full border border-slate-200/80 shadow-2xs text-xs font-semibold backdrop-blur-md">
           <button
             onClick={() => switchTab("presentation")}
-            className={`px-5 py-2 rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-6 py-2 rounded-full transition-all flex items-center gap-2 ${
               activeTab === "presentation"
                 ? "bg-white text-slate-900 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
           >
             <Layers className="w-4 h-4 text-blue-600" />
@@ -46,10 +46,10 @@ function TabContent() {
 
           <button
             onClick={() => switchTab("demo")}
-            className={`px-5 py-2 rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-6 py-2 rounded-full transition-all flex items-center gap-2 ${
               activeTab === "demo"
                 ? "bg-white text-slate-900 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
           >
             <Play className="w-4 h-4 text-indigo-600 fill-indigo-600" />
@@ -58,10 +58,10 @@ function TabContent() {
 
           <button
             onClick={() => switchTab("documents")}
-            className={`px-5 py-2 rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-6 py-2 rounded-full transition-all flex items-center gap-2 ${
               activeTab === "documents"
                 ? "bg-white text-slate-900 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
             }`}
           >
             <BookOpen className="w-4 h-4 text-emerald-600" />

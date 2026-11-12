@@ -15,10 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-        {/* Clean Header with Loadsmart Logo & Three Tabs */}
+      <body className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-sky-100 selection:text-sky-900 bg-saasbright-sky">
+        {/* Saasbright Frosted Header with Loadsmart Logo & Navigation */}
         <Suspense fallback={
-          <header className="h-14 border-b border-slate-200 bg-white" />
+          <header className="h-14 border-b border-slate-200/60 bg-white/80" />
         }>
           <HeaderNav />
         </Suspense>
