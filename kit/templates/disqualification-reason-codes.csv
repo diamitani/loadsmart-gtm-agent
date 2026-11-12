@@ -1,0 +1,9 @@
+code,label,when_to_use,routes_to
+WRONG_INDUSTRY,Wrong industry,Account is outside the ICP industries,RevOps (icp.yaml)
+TOO_SMALL,Too small,Below the size or freight-spend band,RevOps (icp.yaml)
+CURRENT_CUSTOMER,Current customer,Already uses the product being pitched,Account manager (cross-sell)
+BAD_TIMING,Bad timing,Recently bought a competitor or in a freeze,la-signal (timing rules)
+NO_PERSONA,No persona found,No reachable buyer for any product,la-persona-enrich
+COMPETITOR_OR_BROKER,Competitor or broker,Broker / 3PL / carrier,RevOps (exclusions)
+OPEN_OPP_ELSEWHERE,Open opp elsewhere,Another rep or team owns an active opportunity,RevOps (routing)
+OTHER,Other (note required),Anything else; one-line note mandatory,la-pod-feedback

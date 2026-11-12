@@ -1,0 +1,25 @@
+# The daily ABM graph. The orchestrator runs these in order; each step reads the
+# Salesforce field the previous step wrote. Times are America/Chicago.
+# Run it with: n8n schedule triggers, Clay scheduled tables, or Claude scheduled tasks.
+
+daily:
+  - {time: "06:00", skill: la-signal,          writes: Signal__c,              gate: none}
+  - {time: "07:00", skill: la-persona-enrich,  writes: "Contact.Persona__c, Contact.Product__c, Contact.Email_Verified__c", gate: verified_or_flagged}
+  - {time: "07:30", skill: la-research,        writes: Contact.Research_Brief__c, gate: evidence_check}
+  - {time: "08:00", skill: la-email,           writes: Contact.AI_Email_1__c,  gate: qa_rules}
+  - {time: "08:30", skill: la-sequence,        writes: Gong flow enrollment,   gate: rep_approves_batch}
+  - {time: "17:00", skill: la-daily-report,    writes: dashboard numbers,      gate: none}
+
+one_time:
+  - {when: "week 1, before any enrichment", skill: la-crm-audit, writes: "fit scores, tiers, persona tags on existing contacts", gate: revops_approves_writeback}
+
+weekly:
+  - {day: Mon, time: "06:30", skill: la-abm-tag,       writes: "Account.ABM_Account__c, ABM_Pod__c, ABM_Reason__c", gate: revops_approves_list}
+  - {day: Mon, time: "09:00", skill: la-pod-feedback,  writes: change tickets + changelog, gate: owner_per_ticket}
+  - {day: Fri, time: "12:00", skill: la-list-qa,       writes: quality scorecard,      gate: none}
+
+on_failure:
+  retry: 3
+  backoff_seconds: [60, 300, 900]
+  alert: "[#gtm-alerts Slack channel]"
+  rule: "A failed step stops the steps after it for that record. Never skip ahead."
