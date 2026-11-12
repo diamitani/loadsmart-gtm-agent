@@ -60,3 +60,21 @@
 - **User Goals:** 10 recorded
 - **Incidents Encountered:** 5
 - **Files Touched:** 0
+
+
+## Session Entry — 2026-11-11 22:11:46 (`c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`)
+- **User Goals:** 11 recorded
+- **Incidents Encountered:** 5
+- **Files Touched:** 0
+
+
+## Session Entry — 2026-11-11 22:19:17 (`c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`)
+- **User Goals:** 12 recorded
+- **Incidents Encountered:** 5
+- **Files Touched:** 0
+
+
+## Session Entry — 2026-11-11 22:23:00 (`c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`)
+- **User Goals:** Simplify navigation to 3 core links (Home, Presentation, Demo), redesign home page with exact 7 answers to Loadsmart, deck + docs in presentation, live chat + 11-skill marketplace in demo.
+- **Incidents Encountered:** 0
+- **Files Touched:** `components/site-header.tsx`, `app/page.tsx`, `app/presentation/page.tsx`, `app/demo/page.tsx`, `components/deck.tsx`, `components/doc-library.tsx`, `components/demo-chat.tsx`, `components/skills-marketplace.tsx`, `lib/answers.ts`
