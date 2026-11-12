@@ -97,3 +97,4 @@ lib/
 2. **Zero Hallucination:** Every statistic, customer metric, and proof point cited by the AI is strictly validated against `knowledge/claims-library.md`.
 3. **Human-in-the-Loop Signoff:** Reps retain absolute authorization over all external sequence enrollments and CRM writes.
 4. **Deliverability Protection:** Secondary mailboxes capped at 40/day with automatic pause if bounce rates exceed 2.0%.
+

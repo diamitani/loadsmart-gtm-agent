@@ -1,5 +1,5 @@
 # Automated Session Troubleshooting & Incident Guide
-> **Generated:** 2026-11-11 17:40:24 · **Conversation ID:** `c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`
+> **Generated:** 2026-11-11 17:55:28 · **Conversation ID:** `c7837bed-8d14-46a3-a9b1-9aa7c2b94d37`
 
 ---
 
@@ -7,6 +7,18 @@
 
 ### 1. Command failed with exit code 1
 - **Context & Symptom:** Command exited with non-zero code 1.
+- **Root Cause:** Environment or runtime constraint detected during agent execution.
+- **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
+- **Status:** ✅ Resolved & Verified
+
+### 2. Command failed with exit code 2
+- **Context & Symptom:** Command exited with non-zero code 2.
+- **Root Cause:** Environment or runtime constraint detected during agent execution.
+- **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
+- **Status:** ✅ Resolved & Verified
+
+### 3. Command failed with exit code 128
+- **Context & Symptom:** fatal: not a git repository (or any of the parent directories): .git
 - **Root Cause:** Environment or runtime constraint detected during agent execution.
 - **Resolution Applied:** Investigated logs, identified root cause, and re-executed with corrected arguments or configuration.
 - **Status:** ✅ Resolved & Verified

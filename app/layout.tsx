@@ -9,12 +9,14 @@ import {
   Zap, 
   Settings, 
   ShieldCheck, 
-  Layers
+  Layers,
+  Cpu,
+  Compass
 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Loadsmart GTM Agent OS | ABM Pod Intelligence & Automation",
-  description: "Live GTM Agent Operating System for Loadsmart hybrid AE/SDR pods. Powered by Vercel AI SDK, Prospect Automation Engine, and n8n.",
+  description: "Live GTM Agent Operating System for Loadsmart hybrid AE/SDR pods. Powered by Vercel AI SDK, Prospect Automation Engine, Cloudflare, and n8n.",
 };
 
 export default function RootLayout({
@@ -44,52 +46,66 @@ export default function RootLayout({
             </div>
 
             {/* Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1">
               <Link
                 href="/"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <Layers className="w-3.5 h-3.5 text-gray-400" />
                 Overview
               </Link>
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
                 Pod Dashboard
               </Link>
               <Link
                 href="/copilot"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <Bot className="w-3.5 h-3.5 text-indigo-400" />
                 GTM Copilot
               </Link>
               <Link
                 href="/pipeline"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
                 10-Step Engine
               </Link>
               <Link
+                href="/skills"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+              >
+                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                Skill Pack
+              </Link>
+              <Link
                 href="/playbook"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
                 Playbook v2
               </Link>
               <Link
+                href="/architecture"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+              >
+                <Compass className="w-3.5 h-3.5 text-rose-400" />
+                Architecture
+              </Link>
+              <Link
                 href="/automations"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <Workflow className="w-3.5 h-3.5 text-purple-400" />
                 n8n Workflows
               </Link>
               <Link
                 href="/settings"
-                className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-medium rounded-md text-gray-300 hover:text-white hover:bg-gray-800/60 transition-colors flex items-center gap-1.5"
               >
                 <Settings className="w-3.5 h-3.5 text-gray-400" />
                 Settings

@@ -1,0 +1,21 @@
+# Cloudflare Worker: the scheduler for the daily ABM graph.
+# It only triggers steps; the work runs in n8n/Make (v1.1) or the Vercel app's /api/pipeline/run.
+# Cron times are UTC. 12:00 UTC = 06:00 CT in winter (CST). Adjust by one hour for daylight time.
+name = "loadsmart-abm-scheduler"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[triggers]
+crons = [
+  "0 12 * * 1-5",   # 06:00 CT  la-signal
+  "30 12 * * 1",    # 06:30 CT Mon  la-abm-tag
+  "0 13 * * 1-5",   # 07:00 CT  la-persona-enrich
+  "30 13 * * 1-5",  # 07:30 CT  la-research
+  "0 14 * * 1-5",   # 08:00 CT  la-email
+  "30 14 * * 1-5",  # 08:30 CT  la-sequence (approval request only)
+  "0 23 * * 1-5",   # 17:00 CT  la-daily-report
+]
+
+[vars]
+APP_URL = "https://YOUR-VERCEL-DOMAIN.vercel.app"
+# Secret (never in this file): npx wrangler secret put CRON_SECRET
