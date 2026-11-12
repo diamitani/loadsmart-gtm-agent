@@ -66,6 +66,16 @@ export const skillMeta: Record<string, { step: string; when: string }> = {
   "la-list-qa": { step: "Weekly", when: "Fri 12:00" },
   "la-pod-feedback": { step: "Weekly", when: "Mon 09:00" },
 
+  // 6-Step Prospect Automation Process (Patrick Diamitani)
+  "prospect-outreach": { step: "Master 6-Step", when: "End-to-End Orchestrator" },
+  "prospect-step-1-signals": { step: "Step 1 · Signals", when: "Daily Signal Scout" },
+  "prospect-step-2-companies": { step: "Step 2 · Companies", when: "CRM Shield & ICP" },
+  "prospect-step-3-contacts": { step: "Step 3 · Contacts", when: "ZoomInfo + Clay Waterfall" },
+  "prospect-step-4-research": { step: "Step 4 · Research", when: "EDGAR & News Brief" },
+  "prospect-step-5-email": { step: "Step 5 · Email", when: "Claude PAS + Claims" },
+  "prospect-step-6-outreach": { step: "Step 6 · Outreach", when: "Approval + Gong / Apollo" },
+  "n8n-engineer-companion": { step: "n8n Setup", when: "Deployment & Ops" },
+
   // Enably Sovereign GTM Engineering Skills
   "prospector": { step: "Prospecting", when: "Signal Triggered" },
   "clay-gtm-architect": { step: "Enrichment", when: "Waterfall Run" },
@@ -91,6 +101,14 @@ export const skillMeta: Record<string, { step: string; when: string }> = {
   "playbook": { step: "Standard", when: "Sovereign GTM" },
   "use-cases": { step: "Solutions", when: "Shipper / Broker" },
 };
+
+export type SkillCategory = "loadsmart" | "prospect" | "sovereign";
+
+export function getSkillCategory(slug: string): SkillCategory {
+  if (slug.startsWith("la-") || slug === "loadsmart-abm-orchestrator") return "loadsmart";
+  if (slug.startsWith("prospect-") || slug === "n8n-engineer-companion") return "prospect";
+  return "sovereign";
+}
 
 export function getSkillMeta(slug: string): { step: string; when: string } {
   return skillMeta[slug] ?? { step: "Autonomous", when: "Continuous" };

@@ -53,11 +53,11 @@ export function DemoChat() {
           <span className="grid size-9 place-items-center rounded-xl bg-blue-600 text-[12px] font-bold text-white">PC</span>
           <div>
             <p className="text-[15px] font-semibold text-slate-900">Pod Copilot</p>
-            <p className="text-[12px] text-slate-500">Grounded in the playbook and 11 skills. Drafts only, never sends.</p>
+            <p className="text-[12px] text-slate-500">Grounded in the playbook and full skill library. Drafts only, never sends.</p>
           </div>
         </div>
         <span className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700">
-          <span className="size-1.5 rounded-full bg-emerald-500" /> Live
+          Connected
         </span>
       </div>
 

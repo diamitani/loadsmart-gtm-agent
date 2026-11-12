@@ -1,102 +1,122 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Download, Bot, Sparkles, FileText, CheckCircle2 } from "lucide-react";
-import { kit, skillMeta } from "@/lib/kit";
+import { Download, Bot, Workflow } from "lucide-react";
+import { kit, skillMeta, getSkillCategory } from "@/lib/kit";
+import { SkillsMarketplace, type MarketSkill } from "@/components/skills-marketplace";
 
-export const metadata: Metadata = { title: "Skills Library · Loadsmart GTM AI COE" };
+export const metadata: Metadata = {
+  title: "Team Skills Marketplace · Loadsmart GTM AI COE",
+  description:
+    "Portable AI skills marketplace for Loadsmart AE/SDR pods and RevOps: 6-step prospect automation skills, 11 Loadsmart ABM pod skills, and Sovereign GTM blueprints.",
+};
+
+const installWays = [
+  {
+    index: "01",
+    title: "Claude Desktop / Web",
+    detail: "Open Settings > Capabilities > Skills and upload any skill .zip file directly.",
+  },
+  {
+    index: "02",
+    title: "Claude Code CLI",
+    detail: "Unzip into .claude/skills/ inside your repository so every rep invokes them with /skill-name.",
+  },
+  {
+    index: "03",
+    title: "Projects & Automations",
+    detail: "Pair SKILL.md packs with Loadsmart config YAMLs and the 6-step n8n engine.",
+  },
+];
 
 export default function SkillsPage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 space-y-10">
-      {/* Header Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold uppercase tracking-wider mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          Autonomous Agent Skill Pack · 11 Production Blueprints
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">One Master Skill Per Pipeline Step</h1>
-        <p className="mt-2 text-sm sm:text-base text-slate-600 max-w-3xl leading-relaxed">
-          Each skill is a plain-language, deterministic instruction pack an AI assistant follows: what to read from Loadsmart knowledge, what to write, and the strict human-in-the-loop gate before any touchpoint leaves the building. Install in Claude, Cursor, or execute directly from n8n orchestrator workflows.
-        </p>
+  const skills: MarketSkill[] = kit.skills.map((s) => ({
+    slug: s.slug,
+    name: s.name,
+    description: s.description,
+    body: s.body,
+    step: skillMeta[s.slug]?.step ?? "Autonomous",
+    when: skillMeta[s.slug]?.when ?? "On Demand",
+    category: getSkillCategory(s.slug),
+  }));
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+  return (
+    <div className="mx-auto max-w-7xl px-5 sm:px-8 py-12 space-y-10">
+      {/* Header Section */}
+      <section className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-slate-200 pb-8">
+        <div>
+          <p className="text-[12.5px] font-semibold uppercase tracking-[0.12em] text-blue-600">
+            Team Skills Marketplace · {skills.length} Portable Skills
+          </p>
+          <h1 className="mt-2 max-w-3xl text-[32px] sm:text-[46px] font-bold leading-[1.06] tracking-[-0.03em] text-slate-900 text-balance">
+            Deterministic skills built for every step of Loadsmart GTM.
+          </h1>
+          <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-slate-600">
+            Browse the 6-Step Prospect Automation sequence, Loadsmart&apos;s 11 ABM Pod blueprints, and Sovereign GTM engineering skills. Inspect any <code className="font-mono text-[13px] text-blue-700">SKILL.md</code> or download ready-to-install <code className="font-mono text-[13px] text-blue-700">.zip</code> bundles.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            href="/automations"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
+          >
+            <Workflow className="size-4 text-blue-600" />
+            <span>n8n Automation</span>
+          </Link>
+          <Link
+            href="/demo"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[13.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
+          >
+            <Bot className="size-4 text-blue-600" />
+            <span>Test in Copilot</span>
+          </Link>
           <a
             href="/loadsmart-abm-os.zip"
             download
-            className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13.5px] font-semibold text-white hover:bg-blue-700 transition-colors whitespace-nowrap"
           >
-            <Download className="w-4 h-4" />
-            <span>Download Full Skill Pack (kit .zip)</span>
+            <Download className="size-4" />
+            <span>Download Full Kit (.zip)</span>
           </a>
-          <Link
-            href="/copilot"
-            className="px-4 py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-colors"
-          >
-            <Bot className="w-4 h-4 text-blue-600" />
-            <span>Ask Copilot About a Skill</span>
+        </div>
+      </section>
+
+      {/* Install Strip */}
+      <section className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-3">
+        {installWays.map((item) => (
+          <div key={item.index} className="bg-slate-50/90 p-5 sm:p-6">
+            <p className="font-mono text-[12px] font-semibold tabular-nums text-blue-700">{item.index}</p>
+            <h2 className="mt-1.5 text-[15px] font-bold text-slate-900">{item.title}</h2>
+            <p className="mt-1 text-[13.5px] leading-relaxed text-slate-600">{item.detail}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* Searchable, Filterable Grid */}
+      <SkillsMarketplace skills={skills} />
+
+      {/* Grounding Knowledge Files */}
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-[16px] font-bold text-slate-900">Shared Configuration Files Read By Skills</h2>
+            <p className="mt-1 text-[13.5px] text-slate-500">
+              Adjust ICP tiers, pod routing, and outbound quotas in versioned YAML rather than rewriting prompts.
+            </p>
+          </div>
+          <Link href="/documents" className="text-[13px] font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap">
+            Read configs in Documents →
           </Link>
         </div>
-      </div>
 
-      {/* Grid of 11 Skills */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Pipeline Step Skills ({kit.skills.length})
-          </h2>
-          <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 font-medium">
-            Truth Guard W = 1.00 Enforced
-          </span>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          {kit.skills.map((s) => {
-            const meta = skillMeta[s.slug];
-            return (
-              <Link
-                key={s.slug}
-                href={`/skills/${s.slug}`}
-                className="group rounded-xl border border-slate-200 bg-white p-5 hover:border-blue-400 hover:shadow-md transition-all shadow-sm flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
-                      {meta?.step}
-                    </span>
-                    <span className="text-slate-400 font-medium text-[11px]">{meta?.when}</span>
-                  </div>
-                  <h3 className="mt-3 font-mono text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {s.slug}
-                  </h3>
-                  <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
-                    {s.description}
-                  </p>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-semibold">
-                  <span>Inspect Spec & Download .zip →</span>
-                  <FileText className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Configuration Read by Skills */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-        <h2 className="font-bold text-base text-slate-900">Knowledge Configuration Read By All Skills</h2>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Change pipeline behavior in the YAML/Markdown knowledge files, not inside agent prompts. Every file is versioned with strict change audit lines.
-        </p>
-        <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+        <ul className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-[12.5px]">
           {kit.configFiles.map((c) => (
             <li
               key={c.file}
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2 font-mono text-[12px] text-slate-700 flex items-center justify-between"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 font-mono text-slate-700 flex items-center justify-between"
             >
-              <span>config/{c.file}</span>
-              <span className="text-[10px] text-emerald-600 font-semibold">v1.0</span>
+              <span>kit/config/{c.file}</span>
+              <span className="text-[11px] font-semibold text-slate-500">YAML</span>
             </li>
           ))}
         </ul>

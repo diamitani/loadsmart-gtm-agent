@@ -117,17 +117,17 @@ const templates = existsSync(templatesDir)
   ? readdirSync(templatesDir).filter((f) => !f.startsWith(".")).map((f) => ({ file: f, content: read(`kit/templates/${f}`) }))
   : [];
 
-// Automations & schemas (n8n, clay, salesforce)
+// Automations & schemas (n8n, clay, salesforce, prompts)
 const automations = [];
 const autoBase = join(root, "automations");
 if (existsSync(autoBase)) {
-  for (const dir of ["n8n", "clay", "salesforce"]) {
+  for (const dir of ["n8n", "clay", "salesforce", "prompts"]) {
     const sub = join(autoBase, dir);
     if (existsSync(sub)) {
-      for (const f of readdirSync(sub).filter((x) => !x.startsWith("."))) {
+      for (const f of readdirSync(sub).filter((x) => !x.startsWith(".")).sort()) {
         automations.push({
           file: `${dir}/${f}`,
-          type: dir,
+          type: dir === "prompts" ? "prompt" : dir,
           content: read(`automations/${dir}/${f}`),
         });
       }
@@ -136,7 +136,11 @@ if (existsSync(autoBase)) {
 }
 
 // Claims library
-const claimsLibrary = existsSync(join(root, "knowledge/claims-library.md")) ? read("knowledge/claims-library.md") : "";
+const claimsLibrary = existsSync(join(root, "knowledge/loadsmart/claims-library.md"))
+  ? read("knowledge/loadsmart/claims-library.md")
+  : existsSync(join(root, "knowledge/claims-library.md"))
+    ? read("knowledge/claims-library.md")
+    : "";
 
 const outDir = join(root, "lib/generated");
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });

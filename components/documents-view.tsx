@@ -188,16 +188,16 @@ export function DocumentsView() {
       });
     }
 
-    // 7. Claims & Templates (3 assets)
+    // 7. Claims & Templates
     if (kit.claimsLibrary) {
       list.push({
         id: "claims-library.md",
         category: "claims",
-        badge: "CLAIMS",
-        title: "Verified Claims Library",
-        file: "knowledge/claims-library.md",
-        owner: "Truth Guard W=1.00",
-        desc: "Audited customer metrics (1,800+ Shippers, 4,500+ Docks, 230k+ Carriers, 14M Appointments)",
+        badge: "Claims",
+        title: "Approved Claims Library",
+        file: "knowledge/loadsmart/claims-library.md",
+        owner: "Calibrated Truth Guard",
+        desc: "Legal & marketing approved metrics table (nothing ships into copy without an approved C-XXX ID).",
         content: kit.claimsLibrary,
         format: "markdown",
       });
@@ -451,17 +451,17 @@ export function DocumentsView() {
                         : "bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60 shadow-2xs"
                     }`}
                   >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className={`font-mono font-bold ${isSelected ? "text-blue-700" : "text-slate-600"}`}>
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500">
+                      <span className={`font-mono font-semibold tabular-nums ${isSelected ? "text-blue-700" : "text-slate-600"}`}>
                         {item.badge}
                       </span>
                       {item.owner && (
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-medium">
+                        <span className="truncate text-[11px] text-slate-500">
                           {item.owner}
                         </span>
                       )}
                     </div>
-                    <div className="font-bold text-xs text-slate-900 mt-1 line-clamp-1">
+                    <div className="font-semibold text-[13px] text-slate-900 mt-1 line-clamp-1">
                       {item.title}
                     </div>
                     <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 font-mono">
@@ -481,26 +481,24 @@ export function DocumentsView() {
               {/* Document Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[11px] font-mono font-bold">
-                      {selectedItem.badge}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500">
-                      {selectedItem.file}
-                    </span>
+                  <div className="flex items-center gap-2 text-[12px] font-mono text-slate-500">
+                    <span className="font-semibold text-blue-700">{selectedItem.badge}</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="truncate">{selectedItem.file}</span>
                   </div>
                   <h2 className="text-xl font-bold text-slate-900">
                     {selectedItem.title}
                   </h2>
-                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 tabular-nums">
                     <span>{wordCount} words</span>
-                    <span>•</span>
+                    <span aria-hidden="true">·</span>
                     <span>~{readingTime} min read</span>
-                    <span>•</span>
-                    <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      W = 1.00 Verified
-                    </span>
+                    {selectedItem.owner && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="text-slate-700 font-medium">{selectedItem.owner}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 

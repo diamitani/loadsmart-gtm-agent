@@ -1,0 +1,50 @@
+{
+  "name": "05 - Loadsmart Error Alert Handler (Slack #gtm-ops-alerts)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "node-error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $input.first().json;\nreturn [{\n  json: {\n    workflow: err.workflow?.name || 'Loadsmart GTM Engine',\n    node: err.execution?.lastNodeExecuted || 'Unknown Node',\n    message: err.execution?.error?.message || 'Unspecified execution failure',\n    execution_url: err.execution?.url || '',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-format-error",
+      "name": "Format Ops Diagnostic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_GTM_OPS_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \":warning: *Loadsmart n8n Execution Alert*\\n• Workflow: \" + $json.workflow + \"\\n• Failed Node: `\" + $json.node + \"`\\n• Error: \" + $json.message + \"\\n• Execution: \" + $json.execution_url\n}",
+        "options": {}
+      },
+      "id": "node-slack-ops",
+      "name": "Alert #gtm-ops-alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Format Ops Diagnostic", "type": "main", "index": 0 }]]
+    },
+    "Format Ops Diagnostic": {
+      "main": [[{ "node": "Alert #gtm-ops-alerts", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

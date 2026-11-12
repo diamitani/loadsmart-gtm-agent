@@ -130,24 +130,53 @@ export default function HomePage() {
 
       {/* Next */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 py-20">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Link href="/presentation" className="group rounded-3xl border border-slate-200 p-8 hover:border-slate-300 hover:shadow-sm transition-all">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-slate-500">Next</p>
-            <p className="mt-3 text-[24px] font-semibold tracking-[-0.02em] text-slate-900">The presentation</p>
-            <p className="mt-2 text-[15px] text-slate-600">The same answers as a deck, plus the playbook and build docs.</p>
-            <span className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold text-blue-600">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/presentation" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">01 · Presentation</p>
+            <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Case Deck</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Seven answers in presentation slides.</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
               Open <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </Link>
-          <Link href="/demo" className="group rounded-3xl bg-blue-600 p-8 text-white hover:bg-blue-700 transition-colors">
-            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-blue-200">Then</p>
-            <p className="mt-3 text-[24px] font-semibold tracking-[-0.02em]">The agent, live</p>
-            <p className="mt-2 text-[15px] text-blue-100">Talk to the pod agent and download all 11 skills.</p>
-            <span className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold">
-              Try it <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+
+          <Link href="/automations" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">02 · Automations</p>
+            <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">6-Step n8n Engine</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Loadsmart stack workflow JSON + AI setup prompt.</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
+              Inspect <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </Link>
+
+          <Link href="/skills" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">03 · Skills</p>
+            <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Skills Marketplace</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Portable pod & prospecting skills as .zip bundles.</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
+              Browse <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </Link>
+
+          <Link href="/courses" className="group rounded-2xl border border-slate-200 p-6 hover:border-slate-300 transition-all">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">04 · Academy</p>
+            <p className="mt-2.5 text-[20px] font-semibold tracking-[-0.02em] text-slate-900">Claude Code Courses</p>
+            <p className="mt-1.5 text-[14px] text-slate-600">Harness Mastery &amp; Claude for GTM for reps.</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue-600">
+              Start Learning <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </Link>
         </div>
+
+        <Link href="/demo" className="mt-4 group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-blue-600 p-7 text-white hover:bg-blue-700 transition-colors">
+          <div>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-blue-200">Unified Agent Workspace</p>
+            <p className="mt-1.5 text-[22px] font-semibold tracking-[-0.02em]">Talk to Pod Copilot, inspect pipeline steps, and audit guardrails.</p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold whitespace-nowrap shrink-0">
+            Launch Workspace <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+          </span>
+        </Link>
       </section>
     </div>
   );

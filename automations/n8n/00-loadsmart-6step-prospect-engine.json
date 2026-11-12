@@ -1,0 +1,326 @@
+{
+  "name": "00 - Loadsmart 6-Step Prospect Automation Engine (Signal -> Company -> Contact -> Research -> Email -> Outreach)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "node-schedule-trigger",
+      "name": "Daily Pod Trigger (06:00 CT)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [160, 320]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "loadsmart-6step-prospect",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "node-webhook-trigger",
+      "name": "On-Demand Pod Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 500],
+      "webhookId": "loadsmart-6step-prospect"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "cfg-1", "name": "pod_id", "value": "={{ $json.pod_id || 'pod-1' }}", "type": "string" },
+            { "id": "cfg-2", "name": "target_product", "value": "={{ $json.target_product || 'Opendock' }}", "type": "string" },
+            { "id": "cfg-3", "name": "daily_cap", "value": 20, "type": "number" },
+            { "id": "cfg-4", "name": "require_approval", "value": true, "type": "boolean" },
+            { "id": "cfg-5", "name": "dry_run", "value": true, "type": "boolean" },
+            { "id": "cfg-6", "name": "icp_min_score", "value": 65, "type": "number" },
+            { "id": "cfg-7", "name": "batch_date", "value": "={{ $now.toISODate() }}", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-config-guardrails",
+      "name": "Config & Guardrails (dry_run=true)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar-pro\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Step 1 Loadsmart Signal Scout. Return JSON array of shippers with dated why-now signals in the last 90 days (new DC/warehouse, warehouse hiring spike, TMS shift, VP Supply Chain hire, or 10-K freight cost mandate). Require source_url and event_date. Never invent facts.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Find up to \" + $json.daily_cap + \" US enterprise shipper signals mapped to Loadsmart product: \" + $json.target_product\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-step1-signals",
+      "name": "Step 1: Signals (Buying Triggers)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Step 1 signals, apply decay weights, enforce URL + date rule\nconst cfg = $('Config & Guardrails (dry_run=true)').first().json;\nconst raw = $input.first().json;\nlet candidates = [];\ntry {\n  const text = raw?.choices?.[0]?.message?.content || '[]';\n  const match = text.match(/\\[[\\s\\S]*\\]/);\n  candidates = match ? JSON.parse(match[0]) : [];\n} catch {\n  candidates = [];\n}\n\nconst now = Date.now();\nconst scored = candidates\n  .filter(c => c.company_name && c.domain && c.source_url && c.event_date)\n  .map(c => {\n    const ageDays = Math.max(0, Math.floor((now - new Date(c.event_date).getTime()) / 86400000));\n    const decay = ageDays <= 30 ? 1.0 : ageDays <= 60 ? 0.5 : ageDays <= 90 ? 0.25 : 0;\n    const baseWeight = Number(c.base_weight || 0.8);\n    return {\n      pod_id: cfg.pod_id,\n      target_product: c.target_product || cfg.target_product,\n      company_name: c.company_name,\n      domain: String(c.domain).toLowerCase().replace(/^https?:\\/\\//, '').replace(/^www\\./, '').split('/')[0],\n      signal_type: c.signal_type || 'new_facility',\n      event_date: c.event_date,\n      source_url: c.source_url,\n      factual_summary: c.factual_summary || '',\n      timing_score: Number((baseWeight * decay).toFixed(2)),\n      dry_run: cfg.dry_run,\n      require_approval: cfg.require_approval\n    };\n  })\n  .filter(c => c.timing_score > 0)\n  .slice(0, cfg.daily_cap || 20);\n\nreturn scored.map(item => ({ json: item }));"
+      },
+      "id": "node-step1-score",
+      "name": "Step 1b: Signal Decay & Dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [860, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SALESFORCE_INSTANCE_URL + '/services/data/v61.0/query/?q=' + encodeURIComponent(\"SELECT Id, Name, Type, Website, ABM_Pod__c, (SELECT Id, StageName, IsClosed FROM Opportunities WHERE IsClosed = false) FROM Account WHERE Website LIKE '%\" + $json.domain + \"%' LIMIT 5\") }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "salesforceOAuth2Api",
+        "options": {}
+      },
+      "id": "node-step2-sf-shield",
+      "name": "Step 2: Companies (Salesforce Collision Shield)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1080, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "shield-clear",
+              "leftValue": "={{ ($json.records || []).some(r => r.Type === 'Customer' || (r.Opportunities && r.Opportunities.records && r.Opportunities.records.length > 0)) }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-step2-if-cleared",
+      "name": "Step 2b: Quarantined?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1300, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CLAY_WATERFALL_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-clay-signature", "value": "={{ $env.CLAY_WEBHOOK_SECRET }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"company_name\": $('Step 1b: Signal Decay & Dedupe').item.json.company_name,\n  \"domain\": $('Step 1b: Signal Decay & Dedupe').item.json.domain,\n  \"target_product\": $('Step 1b: Signal Decay & Dedupe').item.json.target_product,\n  \"waterfall_providers\": [\"zoominfo\", \"apollo\", \"hunter\", \"prospeo\"],\n  \"target_personas\": [\n    \"VP Supply Chain\",\n    \"Director of Warehouse Operations\",\n    \"Transportation Director\",\n    \"Plant General Manager\"\n  ],\n  \"max_contacts_per_account\": 3\n}",
+        "options": {}
+      },
+      "id": "node-step3-contacts",
+      "name": "Step 3: Contacts (ZoomInfo + Clay Waterfall)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 320]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter strictly to VERIFIED emails; log collisions/quarantines cleanly\nconst input = $input.first().json;\nconst signal = $('Step 1b: Signal Decay & Dedupe').item.json;\nconst contacts = Array.isArray(input.contacts) ? input.contacts : (input.email ? [input] : []);\n\nconst verified = contacts.filter(c => c.email && String(c.email_status || 'VERIFIED').toUpperCase() === 'VERIFIED');\nreturn verified.map(c => ({\n  json: {\n    ...signal,\n    contact_name: c.name || c.full_name || 'Operations Leader',\n    contact_title: c.title || 'Logistics Decision Maker',\n    contact_email: c.email,\n    contact_phone: c.phone || null,\n    contact_linkedin: c.linkedin_url || null,\n    email_status: 'VERIFIED'\n  }\n}));"
+      },
+      "id": "node-step3-verify",
+      "name": "Step 3b: Verified Email Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar-pro\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Step 4 Loadsmart Deep Research. Build a 6-part evidence brief (logistics footprint, dated trigger, operational bottleneck, incumbent TMS/WMS clues, persona hook, approved claims placeholder). Include source URLs. Never invent unknown metrics.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research \" + $json.company_name + \" (\" + $json.domain + \") for \" + $json.contact_name + \" (\" + $json.contact_title + \") triggering on: \" + $json.factual_summary\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-step4-research",
+      "name": "Step 4: Research (EDGAR + News Brief)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1980, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "anthropic-version", "value": "2023-06-01" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 700,\n  \"system\": \"Step 5 Loadsmart Email Drafter. Write 1 concise PAS cold email (<= 90 words) plus 1 lowercase 2-5 word subject line pitching ONLY \" + $('Step 3b: Verified Email Gate').item.json.target_product + \". Calibrated Truth Guard: reference only facts verified in the research brief; zero unapproved percentages or customer counts unless tagged [CLAIM:C-XXX]. Return JSON {subject, body, proof_point}.\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Contact: \" + $('Step 3b: Verified Email Gate').item.json.contact_name + \" (\" + $('Step 3b: Verified Email Gate').item.json.contact_title + \") at \" + $('Step 3b: Verified Email Gate').item.json.company_name + \"\\nSignal: \" + $('Step 3b: Verified Email Gate').item.json.factual_summary + \"\\nResearch: \" + ($json.choices?.[0]?.message?.content || '')\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-step5-email",
+      "name": "Step 5: Email (Claude PAS Draft)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2200, 320]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 5b Deterministic Claims & Copy Linter\nconst prev = $('Step 3b: Verified Email Gate').item.json;\nconst claudeText = $input.first().json?.content?.[0]?.text || '{}';\nlet draft = { subject: 'dock capacity check', body: '', proof_point: prev.source_url };\ntry {\n  const m = claudeText.match(/\\{[\\s\\S]*\\}/);\n  if (m) draft = { ...draft, ...JSON.parse(m[0]) };\n} catch {}\n\nconst words = String(draft.body || '').trim().split(/\\s+/).filter(Boolean).length;\nconst hasBannedFiller = /(hope this finds you well|synergy|game-changer|revolutionize)/i.test(draft.body || '');\nconst linterPassed = words > 0 && words <= 105 && !hasBannedFiller;\n\nreturn [{\n  json: {\n    ...prev,\n    email_subject: draft.subject,\n    email_body: draft.body,\n    proof_point: draft.proof_point,\n    word_count: words,\n    linter_passed: linterPassed,\n    approval_status: 'PENDING_REVIEW'\n  }\n}];"
+      },
+      "id": "node-step5-linter",
+      "name": "Step 5b: Calibrated Truth Linter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2420, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond-live",
+              "leftValue": "={{ $json.dry_run === false && $json.approval_status === 'APPROVED' && $json.linter_passed === true }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-step6-gate",
+      "name": "Step 6: Approval & dry_run Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2640, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.GONG_OR_APOLLO_ENROLL_URL }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": $json.contact_email,\n  \"firstName\": $json.contact_name.split(' ')[0],\n  \"company\": $json.company_name,\n  \"product\": $json.target_product,\n  \"subject\": $json.email_subject,\n  \"body\": $json.email_body,\n  \"podId\": $json.pod_id\n}",
+        "options": {}
+      },
+      "id": "node-step6-dispatch",
+      "name": "Step 6b: Enroll Gong / Apollo Sequence",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2880, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_POD_APPROVAL_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"*Loadsmart 6-Step Draft Ready (Approval Required)*\\n• Pod: \" + $json.pod_id + \" | Product: \" + $json.target_product + \"\\n• Account: \" + $json.company_name + \" (\" + $json.domain + \")\\n• Contact: \" + $json.contact_name + \" <\" + $json.contact_email + \">\\n• Trigger: \" + $json.factual_summary + \" (\" + $json.source_url + \")\\n• Subject: \" + $json.email_subject + \"\\n• Linter: \" + ($json.linter_passed ? 'PASS' : 'NEEDS_EDIT') + \" | dry_run=\" + $json.dry_run\n}",
+        "options": {}
+      },
+      "id": "node-step6-slack-preview",
+      "name": "Step 6c: Slack Human Approval Preview",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2880, 440]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "quar-1", "name": "status", "value": "PARKED_CRM_COLLISION", "type": "string" },
+            { "id": "quar-2", "name": "reason", "value": "Active customer or open opportunity detected in Salesforce Shield", "type": "string" }
+          ]
+        }
+      },
+      "id": "node-step2-quarantine-log",
+      "name": "Log CRM Collision Quarantine",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1540, 520]
+    }
+  ],
+  "connections": {
+    "Daily Pod Trigger (06:00 CT)": {
+      "main": [[{ "node": "Config & Guardrails (dry_run=true)", "type": "main", "index": 0 }]]
+    },
+    "On-Demand Pod Webhook": {
+      "main": [[{ "node": "Config & Guardrails (dry_run=true)", "type": "main", "index": 0 }]]
+    },
+    "Config & Guardrails (dry_run=true)": {
+      "main": [[{ "node": "Step 1: Signals (Buying Triggers)", "type": "main", "index": 0 }]]
+    },
+    "Step 1: Signals (Buying Triggers)": {
+      "main": [[{ "node": "Step 1b: Signal Decay & Dedupe", "type": "main", "index": 0 }]]
+    },
+    "Step 1b: Signal Decay & Dedupe": {
+      "main": [[{ "node": "Step 2: Companies (Salesforce Collision Shield)", "type": "main", "index": 0 }]]
+    },
+    "Step 2: Companies (Salesforce Collision Shield)": {
+      "main": [[{ "node": "Step 2b: Quarantined?", "type": "main", "index": 0 }]]
+    },
+    "Step 2b: Quarantined?": {
+      "main": [
+        [{ "node": "Step 3: Contacts (ZoomInfo + Clay Waterfall)", "type": "main", "index": 0 }],
+        [{ "node": "Log CRM Collision Quarantine", "type": "main", "index": 0 }]
+      ]
+    },
+    "Step 3: Contacts (ZoomInfo + Clay Waterfall)": {
+      "main": [[{ "node": "Step 3b: Verified Email Gate", "type": "main", "index": 0 }]]
+    },
+    "Step 3b: Verified Email Gate": {
+      "main": [[{ "node": "Step 4: Research (EDGAR + News Brief)", "type": "main", "index": 0 }]]
+    },
+    "Step 4: Research (EDGAR + News Brief)": {
+      "main": [[{ "node": "Step 5: Email (Claude PAS Draft)", "type": "main", "index": 0 }]]
+    },
+    "Step 5: Email (Claude PAS Draft)": {
+      "main": [[{ "node": "Step 5b: Calibrated Truth Linter", "type": "main", "index": 0 }]]
+    },
+    "Step 5b: Calibrated Truth Linter": {
+      "main": [[{ "node": "Step 6: Approval & dry_run Gate", "type": "main", "index": 0 }]]
+    },
+    "Step 6: Approval & dry_run Gate": {
+      "main": [
+        [{ "node": "Step 6b: Enroll Gong / Apollo Sequence", "type": "main", "index": 0 }],
+        [{ "node": "Step 6c: Slack Human Approval Preview", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

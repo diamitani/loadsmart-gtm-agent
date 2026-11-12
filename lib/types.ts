@@ -93,7 +93,7 @@ export interface PipelineStage {
 export interface AutomationBlueprint {
   id: string;
   name: string;
-  type: "n8n" | "clay" | "salesforce" | "gong";
+  type: "n8n" | "clay" | "salesforce" | "gong" | "prompt";
   platform: string;
   description: string;
   filename: string;
